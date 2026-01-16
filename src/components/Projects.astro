@@ -20,81 +20,170 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
 
           <div class="lg:col-span-8">
             <div class="space-y-8">
-              {siteConfig.projects.map((project, index) => {
-                const Component = project.link ? "a" : "div";
-                const linkProps = project.link
-                  ? {
-                      href: project.link,
-                      target: "_blank",
-                      rel: "noopener noreferrer",
-                    }
-                  : {};
+              {siteConfig.projects.map((project, index) => (
+                <div class="group relative">
+                  <div
+                    class="block relative p-4 sm:p-6 md:p-8 bg-gray-50 rounded-xl sm:rounded-2xl border border-gray-200 transition-all duration-300"
+                  >
+                    {/* Project Image */}
+                    {project.image && (
+                      <div class="mb-6 overflow-hidden rounded-lg">
+                        <img
+                          src={project.image}
+                          alt={project.name}
+                          class="w-full h-48 sm:h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                    )}
 
-                return (
-                  <div class="group relative">
-                    <Component
-                      {...linkProps}
-                      class={`block relative p-4 sm:p-6 md:p-8 bg-gray-50 rounded-xl sm:rounded-2xl border border-gray-200 transition-all duration-300 ${
-                        project.link
-                          ? "hover:bg-white hover:shadow-xl hover:border-gray-300 hover:-translate-y-1"
-                          : ""
-                      }`}
-                    >
-                      {project.link && (
-                        <div class="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center bg-gray-900 rounded-full text-white transition-all duration-300 group-hover:bg-gray-700">
-                          <svg
-                            class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M7 17L17 7M17 7H7M17 7V17"
-                            />
-                          </svg>
+                    <div class="space-y-4">
+                      <div>
+                        <span
+                          class="text-sm font-mono"
+                          style={{ color: siteConfig.accentColor }}
+                        >
+                          0{index + 1}
+                        </span>
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                          {project.name}
+                        </h3>
+                      </div>
+
+                      <p class="text-base sm:text-lg text-gray-600 leading-relaxed">
+                        {project.description}
+                      </p>
+
+                      {project.skills && project.skills.length > 0 && (
+                        <div class="flex flex-wrap gap-1.5 sm:gap-2 pt-2">
+                          {project.skills.map((skill) => (
+                            <span class="px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gray-900 text-white rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-300">
+                              {skill}
+                            </span>
+                          ))}
                         </div>
                       )}
 
-                      <div class="space-y-4">
-                        <div>
-                          <span
-                            class="text-sm font-mono"
-                            style={{ color: siteConfig.accentColor }}
+                      {/* Action Buttons */}
+                      <div class="flex gap-3 pt-4">
+                        {project.detailedDescription && (
+                          <button
+                            class="modal-trigger px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors duration-300"
+                            data-modal={`modal-${index}`}
                           >
-                            0{index + 1}
-                          </span>
-                          <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
-                            {project.name}
-                          </h3>
-                        </div>
-
-                        <p
-                          class={`text-base sm:text-lg text-gray-600 leading-relaxed ${project.link ? "pr-12 sm:pr-14 md:pr-16" : ""}`}
-                        >
-                          {project.description}
-                        </p>
-
-                        {project.skills && project.skills.length > 0 && (
-                          <div class="flex flex-wrap gap-1.5 sm:gap-2 pt-2">
-                            {project.skills.map((skill) => (
-                              <span
-                                class={`px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gray-900 text-white rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 ${
-                                  project.link ? "group-hover:bg-gray-800" : ""
-                                }`}
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
+                            Learn More
+                          </button>
+                        )}
+                        {project.link && (
+                          <a
+                            href={project.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="px-4 py-2 border-2 border-gray-900 text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-900 hover:text-white transition-all duration-300"
+                          >
+                            View Project
+                          </a>
                         )}
                       </div>
-                    </Component>
+                    </div>
                   </div>
-                );
-              })}
+
+                  {/* Modal */}
+                  {project.detailedDescription && (
+                    <div
+                      id={`modal-${index}`}
+                      class="project-modal fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 opacity-0 invisible transition-all duration-300"
+                    >
+                      <div class="modal-content bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300">
+                        {/* Modal Header */}
+                        <div class="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-start justify-between rounded-t-2xl">
+                          <div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">
+                              {project.name}
+                            </h2>
+                            {project.dateRange && (
+                              <p class="text-sm text-gray-500 mt-1">
+                                {project.dateRange}
+                              </p>
+                            )}
+                          </div>
+                          <button
+                            class="modal-close text-gray-400 hover:text-gray-600 transition-colors"
+                            data-modal={`modal-${index}`}
+                          >
+                            <svg
+                              class="w-6 h-6"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div class="p-6 space-y-6">
+                          {/* Gallery Images */}
+                          {project.galleryImages && project.galleryImages.length > 0 && (
+                            <div class="space-y-4">
+                              {project.galleryImages.map((img) => (
+                                <img
+                                  src={img}
+                                  alt={`${project.name} screenshot`}
+                                  class="w-full rounded-lg"
+                                />
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Detailed Description */}
+                          <div
+                            class="prose prose-lg max-w-none text-gray-600"
+                            set:html={project.detailedDescription}
+                          />
+
+                          {/* Technologies Used */}
+                          {project.technologies && (
+                            <div class="border-t border-gray-200 pt-6">
+                              <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                                Technologies Used
+                              </h3>
+                              <p class="text-gray-600">{project.technologies}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 rounded-b-2xl">
+                          <div class="flex gap-3">
+                            {project.link && (
+                              <a
+                                href={project.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="px-6 py-3 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors duration-300"
+                              >
+                                View Project
+                              </a>
+                            )}
+                            <button
+                              class="modal-close px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors duration-300"
+                              data-modal={`modal-${index}`}
+                            >
+                              Close
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -102,3 +191,74 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
     </section>
   )
 }
+
+<script>
+  // Modal functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalTriggers = document.querySelectorAll('.modal-trigger');
+    const modalCloses = document.querySelectorAll('.modal-close');
+    const modals = document.querySelectorAll('.project-modal');
+
+    // Open modal
+    modalTriggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const modalId = trigger.getAttribute('data-modal');
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.classList.remove('invisible', 'opacity-0');
+          modal.classList.add('opacity-100');
+          const modalContent = modal.querySelector('.modal-content');
+          if (modalContent) {
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+          }
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    });
+
+    // Close modal
+    const closeModal = (modal) => {
+      if (modal) {
+        modal.classList.add('opacity-0');
+        modal.classList.remove('opacity-100');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+          modalContent.classList.add('scale-95');
+          modalContent.classList.remove('scale-100');
+        }
+        setTimeout(() => {
+          modal.classList.add('invisible');
+        }, 300);
+        document.body.style.overflow = '';
+      }
+    };
+
+    modalCloses.forEach(close => {
+      close.addEventListener('click', () => {
+        const modalId = close.getAttribute('data-modal');
+        const modal = document.getElementById(modalId);
+        closeModal(modal);
+      });
+    });
+
+    // Close on backdrop click
+    modals.forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          closeModal(modal);
+        }
+      });
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const openModal = document.querySelector('.project-modal:not(.invisible)');
+        if (openModal) {
+          closeModal(openModal);
+        }
+      }
+    });
+  });
+</script>
