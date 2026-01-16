@@ -120,7 +120,7 @@ export const siteConfig = {
       dateRange: "Feb 2024 - Jun 2024",
       bullets: [
         "Created a gamified learning experience for teenagers to understand the basic concept of programming in C#.",
-        "Mastered the Orientation – Conceptualization – Prototyping – Evaluation design cycle.",
+        "Mastered the "Orientation – Conceptualization – Prototyping – Evaluation" design cycle.",
         "Effectively managed client relationship with museum employees. Transforming the client's needs into a usable end product through continuous feedback and collaboration.",
       ],
     },
@@ -131,7 +131,7 @@ export const siteConfig = {
       bullets: [
         "Developed multiple single & multi-player levels from blockout to publishing, using the Sandbox engine (sandbox.game).",
         "Responsible for level layout, gameplay loop logic, creating story-quests, improving the level flow based on feedback.",
-        "Collaborated with CareBearsTM to create their Winterfest Experience in the sandbox Metaverse.",
+        "Collaborated with CareBears™ to create their Winterfest Experience in the sandbox Metaverse.",
       ],
     },
   ],
