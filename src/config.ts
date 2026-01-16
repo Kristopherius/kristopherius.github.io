@@ -24,6 +24,7 @@ export const siteConfig = {
       name: "Graduation Project",
       description:
         "My final submission at Hanze concentrated on creating a workshop program teaching children how to code parts of a video game",
+      link: "",
       skills: ["Unity 5", "C# VSCode", "Rosyln", "Miro"],
     },
     {
