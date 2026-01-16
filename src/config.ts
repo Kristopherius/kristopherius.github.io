@@ -14,14 +14,24 @@ export const siteConfig = {
   skills: ["Game Development", "Level Design", "Play-Testing", "Brand, Marketing & Monetization"],
   projects: [
     {
-      {
-  name: "Distraught",
-  description: "Find your way through an abandoned village in DISTRAUGHT. My current W.I.P game!",
-  link: "https://store.steampowered.com/app/3034640/Distraught/",
-  skills: ["Unity 6", "C# VSCode", "Miro", "Audacity", "Kitbashing Models"],
-  image: "/images/Distraught/DistraughtSquareLogo.png",
-  detailedDescription: `<p>Test modal content</p>`, // ADD THIS LINE
-}
+      name: "Distraught",
+      description:
+        "Find your way through an abandoned village in DISTRAUGHT. My current W.I.P game!",
+      link: "https://store.steampowered.com/app/3034640/Distraught/",
+      skills: ["Unity 6", "C# VSCode", "Miro", "Audacity", "Kitbashing Models"],
+      image: "/images/Distraught/DistraughtSquareLogo.png",
+      dateRange: "2024 - W.I.P",
+      detailedDescription: `
+        <p>During University I thought of an idea for a horror game, that could both show off my skills as a developer and help me practice my craft. After a week of work or so I managed to put together a vertical slice of what the game would be, and posted it on <a href="https://www.reddit.com/r/IndieDev/comments/1c9jl8w/what_do_you_guys_think_of_the_atmosphere_of_the/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button" target="_blank" class="text-blue-600 hover:underline">reddit</a> for some feedback.</p>
+        <p>After I saw how it resonated with them I started putting more effort into creating a full GDD, short story board, moodboards for the in-game locations and the level layouts in the game.</p>
+        <p>Thanks to a course I followed I researched and developed <a href="https://miro.com/app/board/uXjVK6wA5yg=/?share_link_id=868218026311" target="_blank" class="text-blue-600 hover:underline">a monetization and marketing strategy</a> for this game to be successful. I am developing Distraught using Unity and using models I've either purchased or found online under the CC0 license.</p>
+      `,
+      galleryImages: [
+        "/images/Distraught/Titlecard.gif",
+        "/images/Distraught/DistraughtGif.gif",
+        "/images/Distraught/Distraught-Monster.gif"
+      ],
+      technologies: "Made in Unity 6 with VSCode, Miro. Using free assets from Itch.io and paid assets from Leartes Studios."
     },
     {
       name: "Graduation Project",
