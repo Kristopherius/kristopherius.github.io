@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Krzysztof Paczkowski",
   title: "Game Developer, Designer and Enthusiast",
   description: "Portfolio website of Krzysztof Paczkowski",
-  accentColor: "#1d4ed8",
+  accentColor: "#427e51",
   social: {
     email: "k.p.paczkowski98@gmail.com",
     linkedin: "https://www.linkedin.com/in/chris-donutello/",
