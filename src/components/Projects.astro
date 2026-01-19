@@ -195,19 +195,25 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
 <script>
   // Modal functionality
   document.addEventListener('DOMContentLoaded', () => {
+    console.log('Modal script loaded');
     const modalTriggers = document.querySelectorAll('[data-modal-trigger]');
     const modalCloses = document.querySelectorAll('[data-modal-close]');
 
+    console.log('Found triggers:', modalTriggers.length);
+    console.log('Found close buttons:', modalCloses.length);
+
     // Open modal
-    modalTriggers.forEach(trigger => {
+    modalTriggers.forEach((trigger, index) => {
       trigger.addEventListener('click', (e) => {
+        console.log('Trigger clicked', index);
         e.preventDefault();
         e.stopPropagation();
         const modalId = trigger.getAttribute('data-modal-trigger');
         const modal = document.getElementById(modalId);
+        console.log('Opening modal:', modalId, modal);
         if (modal) {
+          modal.style.display = 'block';
           modal.classList.remove('hidden');
-          modal.classList.add('flex');
           document.body.style.overflow = 'hidden';
         }
       });
@@ -215,19 +221,23 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
 
     // Close modal function
     const closeModal = (modal) => {
+      console.log('Closing modal:', modal);
       if (modal) {
-        modal.classList.remove('flex');
+        modal.style.display = 'none';
         modal.classList.add('hidden');
         document.body.style.overflow = '';
       }
     };
 
     // Close button clicks
-    modalCloses.forEach(close => {
+    modalCloses.forEach((close, index) => {
+      console.log('Attaching close listener to button', index);
       close.addEventListener('click', (e) => {
+        console.log('Close button clicked', index);
         e.preventDefault();
         e.stopPropagation();
         const modal = close.closest('[data-modal]');
+        console.log('Found modal:', modal);
         if (modal) {
           closeModal(modal);
         }
@@ -235,10 +245,27 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
     });
 
     // Close on backdrop click (clicking outside the modal content)
-    document.querySelectorAll('[data-modal]').forEach(modal => {
+    document.querySelectorAll('[data-modal]').forEach((modal, index) => {
+      console.log('Attaching backdrop listener to modal', index);
+      
+      // Click on the wrapper (backdrop area)
+      const wrapper = modal.querySelector('[data-modal-wrapper]');
+      if (wrapper) {
+        wrapper.addEventListener('click', (e) => {
+          console.log('Wrapper clicked', e.target);
+          // Only close if clicking on the wrapper itself, not its children
+          if (e.target === wrapper) {
+            console.log('Closing via backdrop');
+            closeModal(modal);
+          }
+        });
+      }
+      
+      // Also listen on the modal itself
       modal.addEventListener('click', (e) => {
-        // Only close if clicking directly on the backdrop, not on children
+        console.log('Modal clicked', e.target, 'is modal?', e.target === modal);
         if (e.target === modal) {
+          console.log('Closing via modal backdrop');
           closeModal(modal);
         }
       });
@@ -247,9 +274,13 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
     // Close on escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        const openModals = document.querySelectorAll('[data-modal].flex');
+        console.log('Escape pressed');
+        const openModals = document.querySelectorAll('[data-modal]');
         openModals.forEach(modal => {
-          closeModal(modal);
+          if (modal.style.display === 'block' || !modal.classList.contains('hidden')) {
+            console.log('Closing modal via escape');
+            closeModal(modal);
+          }
         });
       }
     });
