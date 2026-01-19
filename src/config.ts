@@ -46,7 +46,7 @@ export const siteConfig = {
         <p>By leveraging a Roslyn C# runtime compiler I created a set of instructions with exercises that the target audience used to learn game development with.</p>
         <img src="/images/NVGM/NVGM-Compiler.gif" alt="Description" class="w-full rounded-lg my-4" />
         <p>Through gamification techniques such as badge rewards, progress tracking, and immediate feedback, the testers had improved retention and a positive experience learning coding!</p>
-        <p>Here's a <a href="https://drive.google.com/drive/folders/1E_x5UPU_IEL1XR90r4n68USYuzrwnrR5?usp=drive_link" target="_blank" class="text-blue-600 hover:underline">walkthrough video</a>!</p>
+        <p>Here's a <a href="https://drive.google.com/file/d/1du5xL3j6SFjMeIMzB7kgjNU_rCx2dZVj/view?usp=sharing" target="_blank" class="text-blue-600 hover:underline">walkthrough video</a>!</p>
       `,
       galleryImages: [],
       technologies: "Made in Unity 5 with VSCode, Miro, Roslyn. Using free 2D assets from Itch.io"
