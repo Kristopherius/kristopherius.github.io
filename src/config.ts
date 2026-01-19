@@ -42,14 +42,13 @@ export const siteConfig = {
       dateRange: "January - July, 2024",
       detailedDescription: `
         <p>For my final project at University I developed a program that the <a href="https://www.nationaalvideogamemuseum.nl/" target="_blank" class="text-blue-600 hover:underline">National Video Game Museum</a> could use during their educational workshops. The primary focus was to teach their attendees how to code through a gamified learning process.</p>
+        <img src="/images/NVGM/NVGM-Instructions.gif" alt="Description" class="w-full rounded-lg my-4" />
         <p>By leveraging a Roslyn C# runtime compiler I created a set of instructions with exercises that the target audience used to learn game development with.</p>
+        <img src="/images/NVGM/NVGM-Compiler.gif" alt="Description" class="w-full rounded-lg my-4" />
         <p>Through gamification techniques such as badge rewards, progress tracking, and immediate feedback, the testers had improved retention and a positive experience learning coding!</p>
         <p>Here's a <a href="https://drive.google.com/drive/folders/1E_x5UPU_IEL1XR90r4n68USYuzrwnrR5?usp=drive_link" target="_blank" class="text-blue-600 hover:underline">walkthrough video</a>!</p>
       `,
-      galleryImages: [
-        "/images/NVGM/NVGM-Instructions.gif",
-        "/images/NVGM/NVGM-Compiler.gif"
-      ],
+      galleryImages: [],
       technologies: "Made in Unity 5 with VSCode, Miro, Roslyn. Using free 2D assets from Itch.io"
     },
     {
@@ -62,14 +61,14 @@ export const siteConfig = {
       dateRange: "2023",
       detailedDescription: `
         <p>Recreating a level from the original DOOM in Unreal Engine was an exciting project that let me combine retro gaming with modern tools. My goal was to stay as true as possible to the original, keeping the layout and feel intact while giving it a fresh, updated look. It was fun experimenting with Unreal Engine's lighting and textures to bring a new level of atmosphere to the classic design while still capturing the gritty, eerie vibe of the original.</p>
+        <img src="/images/Doom-Remake/DOOM-AI.gif" alt="Description" class="w-full rounded-lg my-4" />
         <p>Working on this helped me get comfortable with Unreal Engine's core features. I learned how to create the User Interface, set up lighting, apply textures and creating new scenes. Figuring out how to bring Doom's retro look to a modern engine was a challenge, but it taught me a lot about the tools and how to make a good looking environment. Every tweak to lighting and textures brought me closer to creating something that felt like a modern take on a classic.</p>
+        <img src="/images/Doom-Remake/DOOM-Topview.gif" alt="Description" class="w-full rounded-lg my-4" />
         <p>I also dove into bot AI and player controls to recreate the old-school feeling of the classic. Overall, the project gave me a solid understanding of Unreal Engine and how to take advantage of it to create future projects.</p>
+        <img src="/images/Doom-Remake/DOOM-1and2.gif" alt="Description" class="w-full rounded-lg my-4" />
+        <p>Download it <a href="https://drive.google.com/drive/folders/1E_x5UPU_IEL1XR90r4n68USYuzrwnrR5?usp=drive_link">here</a>, and try it out! </p>
       `,
-      galleryImages: [
-        "/images/Doom-Remake/DOOM-AI.gif",
-        "/images/Doom-Remake/DOOM-Topview.gif",
-        "/images/Doom-Remake/DOOM-1and2.gif"
-      ],
+      galleryImages: [],
       technologies: "Made in Unreal with Blueprints. Using Quixel and free 3D assets."
     },
     {
@@ -82,13 +81,12 @@ export const siteConfig = {
       dateRange: "2023",
       detailedDescription: `
         <p>Creating a game from scratch was an exciting way to dive into learning level design. I learned how things like object placement, pacing, and visual cues impact how players interact with a level. It was a great first approach at making an impactful experience for the players. It was awesome to see how small details could make such a big difference in the overall experience.</p>
+        <img src="/images/ChickenPI/Chuck-1.gif" alt="Description" class="w-full rounded-lg my-4" />
         <p>At the same time, I got to learn the tools behind the scenes. I worked on creating UI that was easy to use and visually appealing and experimented with creating a noir lighting to set a detective-y mood.</p>
+        <img src="/images/ChickenPI/Chuck-2.gif" alt="Description" class="w-full rounded-lg my-4" />
         <p>This project taught me so much about both the creative and technical sides of game design. It was a great hands-on way to learn how all the pieces fit together and how even small decisions can shape the player's experience.</p>
       `,
-      galleryImages: [
-        "/images/ChickenPI/Chuck-1.gif",
-        "/images/ChickenPI/Chuck-2.gif"
-      ],
+      galleryImages: [],
       technologies: "Made in Unity 5, VSCode. Using Synty and free Unity Store 3D & 2D assets."
     },
     {
@@ -100,15 +98,14 @@ export const siteConfig = {
       image: "/images/NectAR/NectAR_Logo.png",
       dateRange: "2022",
       detailedDescription: `
+        <img src="/images/NectAR/NectAR_Feature.png" alt="Description" class="w-full rounded-lg my-4" />
         <p>In a team of eight students, we created an augmented reality (AR) app for Android to teach users about rare and endangered plants in the Netherlands. The project lasted five months, and our goal was to make learning about biodiversity fun and engaging. From building AR features to curating educational content, we worked hard to bring the idea to life while balancing technical challenges and user-friendly design.</p>
+        <img src="/images/NectAR/NectAR_1.jpg" alt="Description" class="w-full rounded-lg my-4" />
         <p>I started as a programmer, working together with another student on creating the entire app within Unity and combining it with the Vuforia Engine for the AR functionality. Halfway through, I stepped up as the product owner, taking charge of prioritizing tasks, ensuring smooth communication, and keeping the project on track. It was a big shift, but it gave me valuable experience in leadership while still contributing technically.</p>
+        <img src="/images/NectAR/NectAR_2.jpg" alt="Description" class="w-full rounded-lg my-4" />
         <p>Looking back, I'm really proud of what we have achieved. The app combined AR with meaningful education, and seeing people respond positively to it was incredibly rewarding. The experience taught me a lot about teamwork, adaptability, and using tech to make a difference!</p>
       `,
-      galleryImages: [
-        "/images/NectAR/NectAR_Feature.png",
-        "/images/NectAR/NectAR_1.jpg",
-        "/images/NectAR/NectAR_2.jpg"
-      ],
+      galleryImages: [],
       technologies: "Made in Unity 5, VSCode, Vuforia"
     },
   ],
