@@ -197,12 +197,12 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
   document.addEventListener('DOMContentLoaded', () => {
     const modalTriggers = document.querySelectorAll('[data-modal-trigger]');
     const modalCloses = document.querySelectorAll('[data-modal-close]');
-    const modals = document.querySelectorAll('[data-modal]');
 
     // Open modal
     modalTriggers.forEach(trigger => {
       trigger.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const modalId = trigger.getAttribute('data-modal-trigger');
         const modal = document.getElementById(modalId);
         if (modal) {
@@ -224,15 +224,20 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
 
     // Close button clicks
     modalCloses.forEach(close => {
-      close.addEventListener('click', () => {
+      close.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         const modal = close.closest('[data-modal]');
-        closeModal(modal);
+        if (modal) {
+          closeModal(modal);
+        }
       });
     });
 
-    // Close on backdrop click
-    modals.forEach(modal => {
+    // Close on backdrop click (clicking outside the modal content)
+    document.querySelectorAll('[data-modal]').forEach(modal => {
       modal.addEventListener('click', (e) => {
+        // Only close if clicking directly on the backdrop, not on children
         if (e.target === modal) {
           closeModal(modal);
         }
@@ -242,10 +247,10 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
     // Close on escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        const openModal = document.querySelector('[data-modal]:not(.hidden)');
-        if (openModal) {
-          closeModal(openModal);
-        }
+        const openModals = document.querySelectorAll('[data-modal].flex');
+        openModals.forEach(modal => {
+          closeModal(modal);
+        });
       }
     });
   });
