@@ -10,8 +10,8 @@ export const siteConfig = {
     github: "https://github.com/Kristopherius",
   },
   aboutMe:
-    "I was born in 1998 Poland, raised in Belgium, living in the Netherlands. I recently graduated Game Design at Hanze University of Groningen. Ever since I've gotten my hands on the first computer in our family, when I was 4 or 5, I was stuck to it forever. Over the course of my life I have played a lot of games, and from that passion I learned to value the hard work and dedication that goes into the art of the craft.",
-  skills: ["Game Development", "Level Design", "Play-Testing", "Brand, Marketing & Monetization"],
+    "I'm a recent Game Design graduate from Hanze University of Groningen with a lifelong passion for games. Growing up immersed in gaming taught me to appreciate the craftsmanship, dedication, and creative problem-solving that goes into great games. I'm currently developing a personal project that allows me to apply my skills in game systems, narrative, level & interaction design, and I'm actively seeking opportunities to contribute to a development team and grow within the industry.",
+  skills: ["Gameplay Development", "Level Design", "Narrative", "Play-Testing", "Interaction Design", "Marketing & Monetization"],
   projects: [
     {
       name: "Distraught",
