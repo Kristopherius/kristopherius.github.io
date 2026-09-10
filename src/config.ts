@@ -109,6 +109,54 @@ export const siteConfig = {
       technologies: "Made in Unity 5, VSCode, Vuforia"
     },
   ],
+  // Browser games playable directly on the site.
+  //
+  // Each game is a self-hosted web build living in `public/games/<slug>/`.
+  // Set `embedPath` to the build's entry file (e.g. "/games/<slug>/index.html")
+  // to make the card playable; leave it empty and the card renders as a
+  // "Coming soon" placeholder. See GAMES.md for the full how-to.
+  //
+  // The three entries below are PLACEHOLDERS — replace the names, copy and
+  // descriptions with your real games, or delete any you don't need. Emptying
+  // this array hides the Games section entirely.
+  games: [
+    {
+      name: "Placeholder Game One",
+      description:
+        "Replace this with a short pitch for your first browser game — what the player does and why it's fun in one or two sentences.",
+      embedPath: "",
+      thumbnail: "",
+      aspectRatio: "16 / 9",
+      controls: "WASD to move, Space to jump",
+      skills: ["Unity WebGL", "C#"],
+      dateRange: "2025",
+      link: "",
+    },
+    {
+      name: "Placeholder Game Two",
+      description:
+        "Replace this with a short pitch for your second browser game.",
+      embedPath: "",
+      thumbnail: "",
+      aspectRatio: "16 / 9",
+      controls: "Mouse only",
+      skills: ["HTML5 Canvas", "JavaScript"],
+      dateRange: "2025",
+      link: "",
+    },
+    {
+      name: "Placeholder Game Three",
+      description:
+        "Replace this with a short pitch for your third browser game.",
+      embedPath: "",
+      thumbnail: "",
+      aspectRatio: "4 / 3",
+      controls: "Arrow keys",
+      skills: ["Godot Web Export"],
+      dateRange: "2024",
+      link: "",
+    },
+  ],
   experience: [
     {
       company: "National Video Game Museum",

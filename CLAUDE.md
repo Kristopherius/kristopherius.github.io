@@ -25,7 +25,7 @@ npm run preview   # Preview production build
 
 The project follows a component-based architecture with all customization centralized in `src/config.ts`:
 
-- **Components** (`src/components/`): Individual Astro components for each section (Hero, About, Projects, Experience, Education, Header, Footer)
+- **Components** (`src/components/`): Individual Astro components for each section (Hero, About, Projects, Games, Experience, Education, Header, Footer)
 - **Main Layout** (`src/pages/index.astro`): Single-page layout that imports all components
 - **Configuration** (`src/config.ts`): Single source of truth for all content and customization
 
@@ -60,5 +60,15 @@ The `src/config.ts` exports a `siteConfig` object with these sections:
 - aboutMe: string
 - skills: string[]
 - projects: array of {name, description, link, skills}
+- games: array of {name, description, embedPath, thumbnail, aspectRatio, controls, skills, dateRange, link}
 - experience: array of {company, title, dateRange, bullets}
 - education: array of {school, degree, dateRange, achievements}
+
+## Browser Games Section
+
+`Games.astro` renders self-hosted web builds that live in `public/games/<slug>/`.
+Each entry's `embedPath` points at the build's entry file; an empty `embedPath`
+renders a "Coming soon" placeholder instead. The iframe is created on click
+rather than at page load, so multiple games cost nothing until one is played.
+See `GAMES.md` for how to add a build, including the Unity WebGL compression
+caveat on GitHub Pages.
