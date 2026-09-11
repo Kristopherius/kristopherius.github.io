@@ -162,11 +162,11 @@ function ratioOf(value: string | undefined): number {
                     >
                       <div class="gm-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
-                      <div class="gm-scroll relative h-full w-full overflow-y-auto p-3 sm:p-5">
+                      <div class="gm-scroll relative h-full w-full overflow-y-auto p-2 sm:p-4">
                         <div class="gm-panel mx-auto bg-white rounded-2xl shadow-2xl">
-                          <div class="sticky top-0 z-10 flex items-start justify-between gap-4 px-5 py-4 bg-white border-b border-gray-200 rounded-t-2xl">
+                          <div class="sticky top-0 z-10 flex items-start justify-between gap-4 px-4 py-3 bg-white border-b border-gray-200 rounded-t-2xl">
                             <div>
-                              <h3 class="text-lg sm:text-xl font-bold text-gray-900">
+                              <h3 class="text-base sm:text-lg font-bold text-gray-900">
                                 {game.name}
                               </h3>
                               {game.dateRange && (
@@ -180,74 +180,74 @@ function ratioOf(value: string | undefined): number {
                               class="gm-close shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
                               aria-label="Close player"
                             >
-                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                               </svg>
                             </button>
                           </div>
 
-                          <div class="gm-body p-4 sm:p-5">
+                          <div class="gm-body p-3 sm:p-4">
                             <div class="gm-frame relative overflow-hidden rounded-lg bg-gray-900">
                               {/* iframe is injected here on open */}
                             </div>
 
-                            <div class="gm-info mt-4">
+                            <div class="gm-info mt-3">
                               {/* A landscape build is cramped in a dialog and
                                   reads much better filling the screen, so the
                                   suggestion is made where it applies. */}
                               {!portrait && (
                                 <div
-                                  class="flex flex-wrap items-center gap-3 mb-4 p-3 rounded-lg"
+                                  class="flex flex-wrap items-center gap-2 mb-3 px-3 py-2 rounded-lg"
                                   style={`background-color: ${accent}14`}
                                 >
                                   <button
                                     type="button"
-                                    class="gm-fullscreen px-4 py-2 rounded-lg text-sm font-medium text-white transition-transform duration-200 hover:scale-105"
+                                    class="gm-fullscreen px-3 py-1.5 rounded-md text-xs font-medium text-white transition-transform duration-200 hover:scale-105"
                                     style={`background-color: ${accent}`}
                                   >
                                     Play fullscreen
                                   </button>
-                                  <p class="text-sm text-gray-600">
+                                  <p class="text-xs text-gray-600">
                                     This one is best played fullscreen.
                                   </p>
                                 </div>
                               )}
 
                               {game.description && (
-                                <p class="text-sm sm:text-base text-gray-600 leading-relaxed">
+                                <p class="gm-prose text-xs sm:text-sm text-gray-600 leading-relaxed">
                                   {game.description}
                                 </p>
                               )}
 
                               {game.controls && (
-                                <p class="text-sm text-gray-500 mt-3">
+                                <p class="gm-prose text-xs text-gray-500 mt-2">
                                   <span class="font-semibold text-gray-700">Controls: </span>
                                   {game.controls}
                                 </p>
                               )}
 
                               {game.skills && game.skills.length > 0 && (
-                                <div class="flex flex-wrap gap-1.5 sm:gap-2 mt-4">
+                                <div class="flex flex-wrap gap-1.5 mt-3">
                                   {game.skills.map((skill) => (
-                                    <span class="px-2.5 py-1 bg-gray-900 text-white rounded-md text-xs font-medium">
+                                    <span class="px-2 py-0.5 bg-gray-900 text-white rounded text-[11px] font-medium">
                                       {skill}
                                     </span>
                                   ))}
                                 </div>
                               )}
 
-                              <div class="flex flex-wrap gap-3 mt-5">
+                              <div class="flex flex-wrap gap-2 mt-4">
                                 {portrait && (
                                   <button
                                     type="button"
-                                    class="gm-fullscreen px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                                    class="gm-fullscreen px-3 py-1.5 bg-gray-900 text-white rounded-md text-xs font-medium hover:bg-gray-700 transition-colors"
                                   >
                                     Fullscreen
                                   </button>
                                 )}
                                 <button
                                   type="button"
-                                  class="gm-close px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                                  class="gm-close px-3 py-1.5 border border-gray-300 text-gray-700 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors"
                                 >
                                   Close
                                 </button>
@@ -256,7 +256,7 @@ function ratioOf(value: string | undefined): number {
                                     href={game.link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="px-4 py-2 border-2 border-gray-900 text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-900 hover:text-white transition-all"
+                                    class="px-3 py-1.5 border border-gray-900 text-gray-900 rounded-md text-xs font-medium hover:bg-gray-900 hover:text-white transition-all"
                                   >
                                     More about this game
                                   </a>
@@ -287,16 +287,31 @@ function ratioOf(value: string | undefined): number {
     aspect-ratio: var(--ar-css);
     margin-inline: auto;
   }
-  .gm-landscape .gm-frame { max-width: calc(56vh * var(--ar-num)); }
-  .gm-portrait .gm-frame { max-width: calc(70vh * var(--ar-num)); }
+  /* The cap is set so the header and the whole frame still clear the fold on
+     a typical laptop; the description is what scrolls, not the game. */
+  .gm-landscape .gm-frame { max-width: calc(72vh * var(--ar-num)); }
+  .gm-portrait .gm-frame { max-width: calc(80vh * var(--ar-num)); }
   @supports (height: 100dvh) {
     /* dvh accounts for a phone's collapsing address bar; vh does not. */
-    .gm-landscape .gm-frame { max-width: calc(56dvh * var(--ar-num)); }
-    .gm-portrait .gm-frame { max-width: calc(70dvh * var(--ar-num)); }
+    .gm-landscape .gm-frame { max-width: calc(72dvh * var(--ar-num)); }
+    .gm-portrait .gm-frame { max-width: calc(80dvh * var(--ar-num)); }
   }
 
-  .gm-panel { max-width: min(96vw, 1200px); }
-  .gm-portrait .gm-panel { max-width: min(96vw, 1080px); }
+  /* Wide enough that the frame stays limited by height rather than by the
+     panel it sits in, which is what keeps it as large as the screen allows. */
+  .gm-panel { max-width: min(97vw, 1500px); }
+  .gm-portrait .gm-panel { max-width: min(97vw, 1200px); }
+
+  /* Under a wide frame the text would otherwise run the full panel width, so
+     it is aligned to the frame's own edges instead. */
+  .gm-landscape .gm-info {
+    max-width: calc(72vh * var(--ar-num));
+    margin-inline: auto;
+  }
+  @supports (height: 100dvh) {
+    .gm-landscape .gm-info { max-width: calc(72dvh * var(--ar-num)); }
+  }
+  .gm-prose { max-width: 82ch; }
 
   /* Portrait builds leave room beside them, so the description moves to the
      right of the frame once there is width for a second column. */
