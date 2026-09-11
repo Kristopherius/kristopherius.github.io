@@ -1,6 +1,16 @@
 ---
 import { siteConfig } from "../config";
 const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
+
+/* Projects with a modal form a ring, so one can hand off to the next without
+   closing back to the page. Entries without detail have no modal to move to. */
+const modalIds = (siteConfig.projects ?? [])
+  .map((project, i) => (project.detailedDescription ? `modal-${i}` : null))
+  .filter((id): id is string => id !== null);
+const stepId = (id: string, step: number) => {
+  const at = modalIds.indexOf(id);
+  return modalIds[(at + step + modalIds.length) % modalIds.length];
+};
 ---
 
 {hasProjects && (
@@ -92,6 +102,8 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
                       id={`modal-${index}`}
                       class="modal fixed inset-0 bg-black/50 z-50 hidden backdrop-blur-sm"
                       style="display: none;"
+                      data-prev={stepId(`modal-${index}`, -1)}
+                      data-next={stepId(`modal-${index}`, 1)}
                     >
                       <div class="fixed inset-0 overflow-y-auto">
                         <div class="flex min-h-full items-center justify-center p-4">
@@ -108,24 +120,51 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
                                   </p>
                                 )}
                               </div>
-                              <button
-                                class="modal-close text-gray-400 hover:text-gray-600 transition-colors"
-                                data-modal-id={`modal-${index}`}
-                              >
-                                <svg
-                                  class="w-6 h-6"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
+                              <div class="flex items-center gap-2 shrink-0">
+                                {modalIds.length > 1 && (
+                                  <>
+                                    <span class="text-xs font-mono text-gray-400 mr-1">
+                                      {modalIds.indexOf(`modal-${index}`) + 1}/{modalIds.length}
+                                    </span>
+                                    <button
+                                      class="modal-nav hidden sm:flex w-9 h-9 items-center justify-center rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                                      data-goto={stepId(`modal-${index}`, -1)}
+                                      aria-label="Previous project"
+                                    >
+                                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      class="modal-nav hidden sm:flex w-9 h-9 items-center justify-center rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                                      data-goto={stepId(`modal-${index}`, 1)}
+                                      aria-label="Next project"
+                                    >
+                                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                      </svg>
+                                    </button>
+                                  </>
+                                )}
+                                <button
+                                  class="modal-close text-gray-400 hover:text-gray-600 transition-colors"
+                                  data-modal-id={`modal-${index}`}
                                 >
-                                  <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
+                                  <svg
+                                    class="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M6 18L18 6M6 6l12 12"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
                             </div>
 
                             {/* Modal Body */}
@@ -260,6 +299,54 @@ const hasProjects = siteConfig.projects && siteConfig.projects.length > 0;
           }
         });
       }
+    });
+
+    // ---- moving between projects ----
+    const openOne = () =>
+      [...document.querySelectorAll('.modal')].find(
+        (modal) => !modal.classList.contains('hidden')
+      );
+
+    // The open modal is replaced rather than stacked, so only one is ever up.
+    const goTo = (id) => {
+      if (!id) return;
+      const current = openOne();
+      if (current) closeModal(current.id);
+      openModal(id);
+    };
+
+    document.querySelectorAll('.modal-nav').forEach((button) => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        goTo(button.getAttribute('data-goto'));
+      });
+    });
+
+    // Swipe, on touch only, and only when horizontal movement dominates - so
+    // scrolling a long project write-up never counts as a swipe.
+    document.querySelectorAll('.modal').forEach((modal) => {
+      let x = 0, y = 0, at = 0;
+      modal.addEventListener('touchstart', (e) => {
+        const touch = e.changedTouches[0];
+        x = touch.clientX; y = touch.clientY; at = Date.now();
+      }, { passive: true });
+      modal.addEventListener('touchend', (e) => {
+        if (Date.now() - at > 800) return;
+        const touch = e.changedTouches[0];
+        const dx = touch.clientX - x, dy = touch.clientY - y;
+        if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        goTo(modal.getAttribute(dx < 0 ? 'data-next' : 'data-prev'));
+      }, { passive: true });
+    });
+
+    // Arrow keys are safe here in a way they are not in the game player:
+    // nothing inside a project modal wants them for itself.
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const modal = openOne();
+      if (!modal) return;
+      goTo(modal.getAttribute(e.key === 'ArrowRight' ? 'data-next' : 'data-prev'));
     });
   });
 </script>

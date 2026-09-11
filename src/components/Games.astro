@@ -8,6 +8,17 @@ const accent = siteConfig.accentColor;
 /* A game's aspect ratio decides how its player is laid out. A landscape build
    already fills the width, so its description reads underneath; a portrait
    build leaves room beside it, so the description sits to its right. */
+/* Games are navigable as a ring, so a dialog can hand off to the next or
+   previous build without going back to the page. Only playable entries take
+   part — a "Coming soon" placeholder has nothing to open. */
+const playableIds = games
+  .map((game, i) => (game.embedPath ? `gm-${i}` : null))
+  .filter((id): id is string => id !== null);
+const stepId = (id: string, step: number) => {
+  const at = playableIds.indexOf(id);
+  return playableIds[(at + step + playableIds.length) % playableIds.length];
+};
+
 function ratioOf(value: string | undefined): number {
   const [w, h] = String(value || "16 / 9")
     .split("/")
@@ -156,6 +167,8 @@ function ratioOf(value: string | undefined): number {
                       style={`display:none; --ar-num:${ratio}; --ar-css:${game.aspectRatio || "16 / 9"}`}
                       data-src={game.embedPath}
                       data-title={game.name}
+                      data-prev={stepId(modalId, -1)}
+                      data-next={stepId(modalId, 1)}
                       role="dialog"
                       aria-modal="true"
                       aria-label={`${game.name} player`}
@@ -175,15 +188,44 @@ function ratioOf(value: string | undefined): number {
                                 </p>
                               )}
                             </div>
-                            <button
-                              type="button"
-                              class="gm-close shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
-                              aria-label="Close player"
-                            >
-                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                              {playableIds.length > 1 && (
+                                <>
+                                  <span class="text-[11px] font-mono text-gray-400 mr-0.5">
+                                    {playableIds.indexOf(modalId) + 1}/{playableIds.length}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    class="gm-nav hidden sm:flex w-8 h-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                                    data-goto={stepId(modalId, -1)}
+                                    aria-label="Previous game"
+                                  >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="gm-nav hidden sm:flex w-8 h-8 items-center justify-center rounded-md border border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                                    data-goto={stepId(modalId, 1)}
+                                    aria-label="Next game"
+                                  >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                  </button>
+                                </>
+                              )}
+                              <button
+                                type="button"
+                                class="gm-close text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label="Close player"
+                              >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
 
                           <div class="gm-body p-3 sm:p-4">
@@ -418,6 +460,43 @@ function ratioOf(value: string | undefined): number {
        and clicking outside the panel are the exits that always work. */
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && openModal && !document.fullscreenElement) close();
+    });
+
+    /* Moving between games reuses open(), so the build being left is torn down
+       before the next one starts and only one is ever live. */
+    const navTo = (id: string | undefined) => {
+      const target = id ? document.getElementById(id) : null;
+      const src = target?.dataset.src;
+      if (target && src) open(target, src, target.dataset.title ?? "Browser game");
+    };
+
+    document.querySelectorAll<HTMLElement>(".gm-nav").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        navTo(button.dataset.goto);
+      });
+    });
+
+    /* Swipe, on touch only. A touch that lands on the game goes to its iframe
+       and never reaches this handler, which is what stops a swipe stealing
+       Perihelion's joystick or Stress Experiment's look control; the closest()
+       guard covers the frame's own edges. Horizontal movement has to dominate,
+       so scrolling the dialog never counts as a swipe. */
+    document.querySelectorAll<HTMLElement>(".gm-scroll").forEach((scroller) => {
+      let x = 0, y = 0, at = 0, armed = false;
+      scroller.addEventListener("touchstart", (event) => {
+        armed = !(event.target as HTMLElement).closest(".gm-frame");
+        const touch = event.changedTouches[0];
+        x = touch.clientX; y = touch.clientY; at = Date.now();
+      }, { passive: true });
+      scroller.addEventListener("touchend", (event) => {
+        if (!armed || Date.now() - at > 800) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - x, dy = touch.clientY - y;
+        if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+        const modal = scroller.closest<HTMLElement>(".gm-modal");
+        navTo(dx < 0 ? modal?.dataset.next : modal?.dataset.prev);
+      }, { passive: true });
     });
   });
 </script>

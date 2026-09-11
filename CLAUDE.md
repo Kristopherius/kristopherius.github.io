@@ -75,5 +75,15 @@ puts it to the right. The iframe is created on open and destroyed on close, and
 opening one game tears down any other, so only one WebGL context is ever live.
 Class names in this component are `gm-`-prefixed to avoid colliding with the
 global `.modal` handlers in `Projects.astro`.
+
+Both `Projects.astro` and `Games.astro` let you move between entries without
+closing: `<`/`>` buttons in the dialog header on `sm` and up, a horizontal
+swipe on touch, and (projects only) the arrow keys. Each dialog carries its
+neighbours as `data-prev`/`data-next`, wrapping at the ends. Two rules matter
+when changing this: a swipe over a running game must not navigate, because it
+would steal the joystick or look control — the handler ignores touches inside
+`.gm-frame`, and touches on the iframe never reach the page anyway; and the
+arrow keys are deliberately *not* bound for games, since Perihelion uses them
+to move.
 See `GAMES.md` for how to add a build, including the Unity WebGL compression
 caveat on GitHub Pages.
