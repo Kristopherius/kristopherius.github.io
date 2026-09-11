@@ -119,41 +119,38 @@ export const siteConfig = {
   // The three entries below are PLACEHOLDERS — replace the names, copy and
   // descriptions with your real games, or delete any you don't need. Emptying
   // this array hides the Games section entirely.
+  // Browser games playable directly on the site.
+  //
+  // Each game is a self-hosted web build living in `public/games/<slug>/`.
+  // Set `embedPath` to the build's entry file (e.g. "/games/<slug>/index.html")
+  // to make the card playable; leave it empty and the card renders as a
+  // "Coming soon" placeholder. See GAMES.md for the full how-to, including
+  // how to refresh these builds from their source projects.
+  //
+  // Emptying this array hides the Games section entirely.
   games: [
     {
-      name: "Placeholder Game One",
+      name: "Stress Experiment",
       description:
-        "Replace this with a short pitch for your first browser game — what the player does and why it's fun in one or two sentences.",
-      embedPath: "",
-      thumbnail: "",
+        "A first-person horror game. You're invited to an experiment: collect the objects scattered through a facility while a face pushes out of the walls and a black sphere hunts you by sound. Six floors, each one generated fresh every run.",
+      embedPath: "/games/stress-experiment/index.html",
+      thumbnail: "/images/Games/stress-experiment.jpg",
       aspectRatio: "16 / 9",
-      controls: "WASD to move, Space to jump",
-      skills: ["Unity WebGL", "C#"],
-      dateRange: "2025",
+      controls: "WASD to move, mouse to look \u2014 find the flashlight before anything else",
+      skills: ["WebGL2", "JavaScript", "Raymarching", "Procedural Levels"],
+      dateRange: "2026 - W.I.P",
       link: "",
     },
     {
-      name: "Placeholder Game Two",
+      name: "Perihelion",
       description:
-        "Replace this with a short pitch for your second browser game.",
-      embedPath: "",
-      thumbnail: "",
+        "A survivors-like set on a tiny procedural planet. You are a ball rolling across its surface, holding off a swarm that has found what is left of the world \u2014 level up, pick your upgrades, and bring down the guardians.",
+      embedPath: "/games/perihelion/index.html",
+      thumbnail: "/images/Games/perihelion.jpg",
       aspectRatio: "16 / 9",
-      controls: "Mouse only",
-      skills: ["HTML5 Canvas", "JavaScript"],
-      dateRange: "2025",
-      link: "",
-    },
-    {
-      name: "Placeholder Game Three",
-      description:
-        "Replace this with a short pitch for your third browser game.",
-      embedPath: "",
-      thumbnail: "",
-      aspectRatio: "4 / 3",
-      controls: "Arrow keys",
-      skills: ["Godot Web Export"],
-      dateRange: "2024",
+      controls: "WASD / arrow keys, or click and drag to roll \u2014 chase the gold beacons",
+      skills: ["Three.js", "WebGL", "Procedural Generation", "JavaScript"],
+      dateRange: "2026",
       link: "",
     },
   ],

@@ -48,6 +48,44 @@ The game only loads when a visitor clicks **Play in browser** — the iframe is
 created on click, so having several games on the page costs nothing until
 someone actually plays one.
 
+## The games currently on the site
+
+Both builds were copied in from their source projects and adjusted for this
+site. If you refresh either one, re-apply the changes below or they will come
+back.
+
+### Stress Experiment
+
+- **Source:** `Kristopherius/Stress-Experiments`, branch `clouade`, file
+  `build/index.html` (produced by `tools/build.ps1`). It is a single
+  self-contained 6.3 MB file with all art base64-inlined.
+- **Change applied:** the `<script src="https://game-cdn.poki.com/...">` tag was
+  removed. That tag is for the Poki portal build. This site is not the portal,
+  so there is no ad inventory to serve, and a personal portfolio should not ship
+  a third-party ad and tracking script to its visitors — particularly with no
+  consent flow, for an EU audience. `js/poki.js` is written to degrade to a
+  no-op when `window.PokiSDK` is absent, so the game plays exactly as it does on
+  Poki, minus the ad breaks.
+- Needs **WebGL2**; it shows its own "UNABLE TO START" screen if that is missing.
+
+To refresh: copy `build/index.html` over
+`public/games/stress-experiment/index.html` and delete the Poki script tag again.
+
+### Perihelion
+
+- **Source:** the published Claude artifact (`Perihelion`), a single-file
+  Three.js build.
+- **Changes applied:**
+  1. The Poki SDK loader is short-circuited (an early `return done();` in
+     `Ads.init`), for the same reasons as above. The loader is left in place so
+     a future portal build can re-enable it by deleting that one line.
+  2. **three.js r128 is vendored** as `public/games/perihelion/three.min.js`
+     instead of being pulled from cdnjs at runtime. A portfolio piece should not
+     be able to turn into a blank screen because a CDN is blocked by a corporate
+     network, an ad blocker, or a regional block.
+
+To refresh: re-export the artifact, then re-apply both changes.
+
 ## Engine-specific notes
 
 ### Unity WebGL
