@@ -68,7 +68,12 @@ The `src/config.ts` exports a `siteConfig` object with these sections:
 
 `Games.astro` renders self-hosted web builds that live in `public/games/<slug>/`.
 Each entry's `embedPath` points at the build's entry file; an empty `embedPath`
-renders a "Coming soon" placeholder instead. The iframe is created on click
-rather than at page load, so multiple games cost nothing until one is played.
+renders a "Coming soon" placeholder instead. Clicking a cover opens the game in
+a player dialog; `aspectRatio` decides that dialog's layout — a landscape build
+puts the description below the game and suggests fullscreen, a portrait build
+puts it to the right. The iframe is created on open and destroyed on close, and
+opening one game tears down any other, so only one WebGL context is ever live.
+Class names in this component are `gm-`-prefixed to avoid colliding with the
+global `.modal` handlers in `Projects.astro`.
 See `GAMES.md` for how to add a build, including the Unity WebGL compression
 caveat on GitHub Pages.

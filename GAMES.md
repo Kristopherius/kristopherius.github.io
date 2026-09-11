@@ -44,9 +44,27 @@ An entry with an empty `embedPath` renders as a "Coming soon" placeholder, so
 you can announce a game before its build is ready. Emptying the whole `games`
 array hides the section (and its nav links) entirely.
 
-The game only loads when a visitor clicks **Play in browser** — the iframe is
-created on click, so having several games on the page costs nothing until
-someone actually plays one.
+### How `aspectRatio` affects the player
+
+Games open in a player dialog, and the ratio decides its layout:
+
+- **Landscape** (wider than tall, e.g. `16 / 9`) — the game sits on top with its
+  description underneath, and the dialog suggests playing fullscreen, since a
+  landscape build is cramped in a window.
+- **Portrait** (taller than wide, e.g. `9 / 16`) — the game sits on the left with
+  its description beside it on the right, collapsing to a single column under
+  900px wide.
+
+So set `aspectRatio` to match the build's real canvas — it is a layout
+instruction, not just a letterbox.
+
+### One game at a time
+
+Nothing loads until a visitor clicks **Play in browser**. The iframe is created
+on open and *destroyed* on close, and opening another game tears the previous
+one down first — a WebGL build keeps its GPU context, audio and render loop
+alive for as long as its iframe exists, so leaving a finished game parked in the
+page would quietly cost a phone its battery.
 
 ## The games currently on the site
 
