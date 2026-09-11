@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#3a2620">
+<title>HORNS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#3a2620; --ink2:#4c332a;
+  --bone:#f6e6d2; --boneDim:#d8c0a6;
+  --terra:#c2694a; --terraDeep:#a4523a;
+  --rose:#e9b39c; --gold:#f2b544; --coral:#ff7a5c;
+  --blue:#5d7b99; --blood:#d1453f;
+  --ui:'Space Grotesk', 'Trebuchet MS', system-ui, sans-serif;
+  --display:'Bungee', 'Space Grotesk', system-ui, sans-serif;
+}
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body {
+  margin:0; padding:0; height:100%; overflow:hidden;
+  background:var(--ink); color:var(--bone);
+  font-family:var(--ui); font-size:14px;
+  -webkit-text-size-adjust:100%; overscroll-behavior:none; user-select:none;
+}
+.app { display:flex; flex-direction:column; height:100dvh; }
+
+/* ---------- top bar ---------- */
+.top {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 12px; background:var(--ink2);
+  border-bottom:3px solid #291914;
+}
+.stage { min-width:0; }
+.stage b {
+  display:block; font-family:var(--display); font-size:14px;
+  letter-spacing:.02em; color:var(--bone); line-height:1.15;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.stage i {
+  font-style:normal; font-size:9px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--boneDim);
+}
+.gauges { flex:1; display:flex; flex-direction:column; gap:4px; min-width:0; }
+.gauge { display:flex; align-items:center; gap:6px; }
+.gauge span {
+  font-size:8px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--boneDim); width:34px; flex:0 0 34px;
+}
+.track {
+  flex:1; height:9px; background:#291914; border-radius:2px; overflow:hidden;
+}
+.fill { height:100%; width:0%; transition:width .12s linear; }
+.fill.blood { background:var(--coral); }
+.fill.circle { background:var(--gold); }
+.gauge b { font-size:11px; width:24px; text-align:right; font-variant-numeric:tabular-nums; }
+
+/* ---------- field ---------- */
+.field { position:relative; flex:1 1 auto; min-height:0; background:var(--ink); }
+.field canvas { position:absolute; inset:0; display:block; touch-action:none; }
+
+#banner {
+  position:absolute; left:0; right:0; top:16%;
+  text-align:center; font-family:var(--display); font-size:22px;
+  color:var(--bone); text-shadow:0 3px 0 #291914, 0 0 18px rgba(255,122,92,.5);
+  pointer-events:none; transition:opacity .2s;
+}
+#toasts {
+  position:absolute; left:0; right:0; bottom:8px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  pointer-events:none;
+}
+#toasts .t {
+  font-family:var(--display); font-size:12px; letter-spacing:.02em;
+  padding:3px 10px; border-radius:2px; background:rgba(41,25,20,.82);
+}
+#toasts .good { color:var(--gold); }
+#toasts .warn { color:var(--coral); }
+#toasts .bad  { color:var(--boneDim); }
+
+/* ---------- sigil strip ---------- */
+.strip {
+  display:flex; gap:4px; padding:6px 8px;
+  background:var(--ink2); border-top:3px solid #291914;
+  overflow-x:auto; scrollbar-width:none;
+}
+.strip::-webkit-scrollbar { display:none; }
+.sig {
+  flex:1 1 0; min-width:42px;
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  background:#33211b; border-radius:3px; padding:4px 2px 3px;
+}
+.sig canvas { width:28px; height:28px; }
+.sig b {
+  font-size:7.5px; font-weight:600; letter-spacing:.04em;
+  text-transform:uppercase; color:var(--boneDim);
+  white-space:nowrap; overflow:hidden; max-width:100%;
+}
+.sig i { font-style:normal; font-size:10px; color:var(--coral); font-weight:700; }
+.sig u {
+  text-decoration:none; font-size:7.5px; font-weight:700; line-height:1;
+  letter-spacing:.04em; color:var(--boneDim); min-height:8px;
+}
+.sig u.full { color:var(--blood); }
+
+/* ---------- overlays ---------- */
+.sheet {
+  position:absolute; inset:0; z-index:5;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:22px; gap:12px; overflow-y:auto;
+  background:rgba(41,25,20,.94);
+}
+.sheet.hidden { display:none; }
+.sheet h1 {
+  font-family:var(--display); font-size:30px; margin:0;
+  line-height:1.05; color:var(--gold);
+}
+.sheet h1 small { display:block; font-size:12px; color:var(--rose); letter-spacing:.2em; text-transform:uppercase; font-family:var(--ui); margin-bottom:6px; }
+.sheet p { margin:0; font-size:13px; line-height:1.55; color:var(--bone); max-width:44ch; }
+.sheet p.dim { color:var(--boneDim); font-size:12px; }
+.sheet button {
+  align-self:flex-start; margin-top:6px;
+  font-family:var(--display); font-size:15px;
+  background:var(--coral); color:#2a1610; border:0;
+  padding:12px 24px; border-radius:3px; cursor:pointer;
+  box-shadow:0 4px 0 #b64a35;
+}
+.sheet button:active { transform:translateY(3px); box-shadow:0 1px 0 #b64a35; }
+.rules { display:flex; flex-direction:column; gap:5px; }
+.rules div { display:flex; gap:9px; align-items:baseline; font-size:12px; }
+.rules span { color:var(--gold); font-weight:700; flex:0 0 auto; }
+.rules em { font-style:normal; color:var(--boneDim); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="top">
+    <div class="stage"><b id="stageName">The Outskirts</b><i id="stageNum">front 1/4</i></div>
+    <div class="gauges">
+      <div class="gauge"><span>blood</span><div class="track"><div class="fill blood" id="bloodFill"></div></div><b id="bloodNum">0</b></div>
+      <div class="gauge"><span>circle</span><div class="track"><div class="fill circle" id="circleFill"></div></div><b></b></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <canvas id="view"></canvas>
+    <div id="banner" class="hidden"></div>
+    <div id="toasts"></div>
+
+    <div class="sheet" id="intro">
+      <h1><small>Draw to summon</small>HORNS</h1>
+      <div class="rules">
+        <div><span>Draw</span><em>a sigil anywhere on the field. Nothing pauses while you draw.</em></div>
+        <div><span>Where</span><em>units rise at the bottom, in the lane you drew. Ward, Strike and Altar land exactly where you drew them.</em></div>
+        <div><span>Blood</span><em>regrows on its own and pours in from kills.</em></div>
+        <div><span>Sloppy</span><em>sigils still summon, but corrupted and weaker.</em></div>
+        <div><span>Four fronts</span><em>outskirts, village, palisade, keep. Clear one and the host moves up.</em></div>
+      </div>
+      <p class="dim">Raiders break off to hunt your circle. Ignore them and you lose the ritual, not the siege.</p>
+      <button id="startBtn">Open the gate</button>
+    </div>
+
+    <div class="sheet hidden" id="over">
+      <h1 id="overTitle">—</h1>
+      <p id="overBody"></p>
+      <button id="againBtn">Again</button>
+    </div>
+  </div>
+
+  <div class="strip" id="strip"></div>
+
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   $P Point-Cloud Recognizer  (Vatavu, Anthony & Wobbrock, 2012)
+   Faithful port. Notes on deliberate choices for HORNS:
+   - No indicative-angle rotation step. $P is rotation-SENSITIVE,
+     which is what we want: caret != vee, up-bolt != down-bolt.
+   - Uniform scaling (divide by max dimension), so a straight line
+     does not blow up into a square. Aspect ratio survives.
+   - Stroke count is NOT used to filter. Matching stays forgiving;
+     pressure lives in the clock, not the parser.
+   --------------------------------------------------------------- */
+(function (root) {
+  'use strict';
+
+  var N = 32; // resample count
+
+  function dist(a, b) {
+    var dx = a.x - b.x, dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function pathLength(pts) {
+    var d = 0;
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i].id === pts[i - 1].id) d += dist(pts[i - 1], pts[i]);
+    }
+    return d;
+  }
+
+  function resample(points, n) {
+    var pts = points.map(function (p) { return { x: p.x, y: p.y, id: p.id }; });
+    var total = pathLength(pts);
+    if (total <= 0) { // a dot, or a single-point tap
+      var out = [];
+      for (var k = 0; k < n; k++) out.push({ x: pts[0].x, y: pts[0].y, id: pts[0].id });
+      return out;
+    }
+    var I = total / (n - 1);
+    var D = 0;
+    var newPoints = [{ x: pts[0].x, y: pts[0].y, id: pts[0].id }];
+    for (var i = 1; i < pts.length; i++) {
+      if (pts[i].id !== pts[i - 1].id) continue; // pen lift: no interpolation across the gap
+      var d = dist(pts[i - 1], pts[i]);
+      if (D + d >= I) {
+        var t = (I - D) / d;
+        var q = {
+          x: pts[i - 1].x + t * (pts[i].x - pts[i - 1].x),
+          y: pts[i - 1].y + t * (pts[i].y - pts[i - 1].y),
+          id: pts[i].id
+        };
+        newPoints.push(q);
+        pts.splice(i, 0, q); // continue measuring from the new point
+        D = 0;
+      } else {
+        D += d;
+      }
+    }
+    while (newPoints.length < n) {
+      var last = pts[pts.length - 1];
+      newPoints.push({ x: last.x, y: last.y, id: last.id });
+    }
+    return newPoints;
+  }
+
+  function scaleUniform(points) {
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (var i = 0; i < points.length; i++) {
+      if (points[i].x < minX) minX = points[i].x;
+      if (points[i].x > maxX) maxX = points[i].x;
+      if (points[i].y < minY) minY = points[i].y;
+      if (points[i].y > maxY) maxY = points[i].y;
+    }
+    var size = Math.max(maxX - minX, maxY - minY);
+    if (size === 0) size = 1;
+    return points.map(function (p) {
+      return { x: (p.x - minX) / size, y: (p.y - minY) / size, id: p.id };
+    });
+  }
+
+  function translateToOrigin(points) {
+    var cx = 0, cy = 0;
+    for (var i = 0; i < points.length; i++) { cx += points[i].x; cy += points[i].y; }
+    cx /= points.length; cy /= points.length;
+    return points.map(function (p) {
+      return { x: p.x - cx, y: p.y - cy, id: p.id };
+    });
+  }
+
+  function normalize(points, n) {
+    n = n || N;
+    return translateToOrigin(scaleUniform(resample(points, n)));
+  }
+
+  function cloudDistance(pts, tmpl, n, start) {
+    var matched = new Array(n);
+    for (var m = 0; m < n; m++) matched[m] = false;
+    var sum = 0;
+    var i = start;
+    do {
+      var min = Infinity, index = -1;
+      for (var j = 0; j < n; j++) {
+        if (matched[j]) continue;
+        var d = dist(pts[i], tmpl[j]);
+        if (d < min) { min = d; index = j; }
+      }
+      matched[index] = true;
+      var weight = 1 - ((i - start + n) % n) / n;
+      sum += weight * min;
+      i = (i + 1) % n;
+    } while (i !== start);
+    return sum;
+  }
+
+  function greedyCloudMatch(pts, tmpl) {
+    var n = pts.length;
+    var step = Math.floor(Math.pow(n, 0.5)); // eps = 0.5
+    if (step < 1) step = 1;
+    var min = Infinity;
+    for (var i = 0; i < n; i += step) {
+      var d1 = cloudDistance(pts, tmpl, n, i);
+      var d2 = cloudDistance(tmpl, pts, n, i);
+      if (d1 < min) min = d1;
+      if (d2 < min) min = d2;
+    }
+    return min;
+  }
+
+  /* The reference $P score, max((d-2)/-2, 0), saturates hard on this
+     glyph set: every wrong answer pins to 0.000 and the collision chart
+     goes blind. So the bench reports the raw cloud distance instead, plus:
+       fit  = exp(-d)          a readable 0..1 stand-in for "how close"
+       edge = (d2 - d1) / d2   how far clear the winner is of the runner-up
+     A miss is nearly always a small edge, not a bad fit. */
+  function scoreOf(distance) {
+    return Math.max((distance - 2.0) / -2.0, 0.0); // kept for reference
+  }
+
+  function fitOf(distance) {
+    return Math.exp(-distance);
+  }
+
+  /* Rank a candidate against a template bank.
+     bank: [{ id, name, cloud:[normalised points] }, ...]
+     Multiple templates may share an id; the best one wins for that id. */
+  function rank(candidateRaw, bank) {
+    var cand = normalize(candidateRaw, N);
+    var best = {};
+    for (var i = 0; i < bank.length; i++) {
+      var t = bank[i];
+      var d = greedyCloudMatch(cand, t.cloud);
+      if (!best[t.id] || d < best[t.id].dist) {
+        best[t.id] = { id: t.id, name: t.name, dist: d, fit: fitOf(d) };
+      }
+    }
+    var list = Object.keys(best).map(function (k) { return best[k]; });
+    list.sort(function (a, b) { return a.dist - b.dist; });
+    for (var j = 0; j < list.length; j++) {
+      list[j].edge = list[1] && list[1].dist > 0
+        ? Math.max(0, (list[1].dist - list[0].dist) / list[1].dist)
+        : 1;
+    }
+    return list;
+  }
+
+  root.PDollar = {
+    N: N,
+    normalize: normalize,
+    greedyCloudMatch: greedyCloudMatch,
+    scoreOf: scoreOf,
+    fitOf: fitOf,
+    rank: rank
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* ---------------------------------------------------------------
+   HORNS — glyph bank
+   Geometry authored in a 0..100 box. Each glyph declares a budget:
+   the draw time the design ASSUMES it costs. The bench measures
+   whether that assumption survives contact with a thumb.
+   --------------------------------------------------------------- */
+(function (root) {
+  'use strict';
+
+  function arc(cx, cy, r, a0, a1, steps) {
+    var out = [];
+    for (var i = 0; i <= steps; i++) {
+      var a = a0 + (a1 - a0) * (i / steps);
+      out.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+    }
+    return out;
+  }
+
+  var RAD = Math.PI / 180;
+
+  // point-down pentagram
+  function star() {
+    var v = [];
+    for (var k = 0; k < 5; k++) {
+      var a = (90 + k * 72) * RAD;
+      v.push([50 + 38 * Math.cos(a), 50 + 38 * Math.sin(a)]);
+    }
+    var order = [0, 2, 4, 1, 3, 0];
+    return order.map(function (i) { return v[i]; });
+  }
+
+  var GLYPHS = [
+    {
+      id: 'cut', name: 'Cut', summons: 'imp', budget: 400,
+      blurb: 'One slash. Chaff, instantly.',
+      strokes: [[[22, 20], [78, 80]]]
+    },
+    {
+      id: 'spire', name: 'Spire', summons: 'archer', budget: 650,
+      blurb: 'Ranged. Two strokes of the wrist, one line.',
+      strokes: [[[20, 80], [50, 20], [80, 80]]]
+    },
+    {
+      id: 'horns', name: 'Horns', summons: 'goat-kin', budget: 900,
+      blurb: 'The brute. Two crescents with a skull-peak between them — that notch is what keeps it out of Ring.',
+      strokes: [[
+        [21, 12], [14, 20], [12, 32], [17, 48], [28, 63], [38, 72], [44, 76],
+        [50, 60],
+        [56, 76], [62, 72], [72, 63], [83, 48], [88, 32], [86, 20], [79, 12]
+      ]]
+    },
+    {
+      id: 'ring', name: 'Ring', summons: 'ward', budget: 750,
+      blurb: 'Encircle your own units to shield them. Direction does not matter.',
+      strokes: [arc(50, 50, 33, -90 * RAD, 270 * RAD, 28)]
+    },
+    {
+      id: 'bolt', name: 'Bolt', summons: 'strike', budget: 1000,
+      blurb: 'Direct damage. Zig, zag, zig.',
+      strokes: [[[32, 14], [70, 38], [32, 62], [70, 86]]]
+    },
+    {
+      id: 'cross', name: 'Cross', summons: 'barrier', budget: 950,
+      blurb: 'Two strokes, inverted. Tests whether multi-stroke survives a fast hand.',
+      strokes: [
+        [[50, 12], [50, 88]],
+        [[26, 66], [74, 66]]
+      ]
+    },
+    {
+      id: 'pentacle', name: 'Pentacle', summons: 'the great beast', budget: 1700,
+      blurb: 'The big one. Five lines with the battle still running.',
+      strokes: [star()]
+    }
+  ];
+
+  // Densify: interpolate along each segment so resampling has material to chew on.
+  function densify(strokes, spacing) {
+    spacing = spacing || 1.6;
+    var pts = [];
+    for (var s = 0; s < strokes.length; s++) {
+      var stroke = strokes[s];
+      for (var i = 1; i < stroke.length; i++) {
+        var a = stroke[i - 1], b = stroke[i];
+        var dx = b[0] - a[0], dy = b[1] - a[1];
+        var len = Math.sqrt(dx * dx + dy * dy);
+        var n = Math.max(1, Math.round(len / spacing));
+        for (var k = 0; k < n; k++) {
+          var t = k / n;
+          pts.push({ x: a[0] + dx * t, y: a[1] + dy * t, id: s });
+        }
+      }
+      var last = stroke[stroke.length - 1];
+      pts.push({ x: last[0], y: last[1], id: s });
+    }
+    return pts;
+  }
+
+  GLYPHS.forEach(function (g) {
+    g.ideal = densify(g.strokes);
+    g.strokeCount = g.strokes.length;
+  });
+
+  root.GLYPHS = GLYPHS;
+  root.densify = densify;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* ---------------------------------------------------------------
+   HORNS — kit, close-up scale
+   Everything is retuned for a 240x340 window instead of the old
+   400x700 board: ranges and speeds are ~0.6x, radii are up, so a
+   footman reads as a body rather than a dot.
+   --------------------------------------------------------------- */
+(function (root) {
+  'use strict';
+
+  var VIEW = { w: 240, h: 340 };
+  var WORLD_H = 1820;
+
+  var PAL = {
+    duskA: '#e9b39c', duskB: '#d98f7d',
+    earth: '#c2694a', earthDark: '#a4523a', earthLight: '#d98a5f',
+    dust: '#e0aa79', sage: '#93a37c', sageDark: '#75855f',
+    bone: '#f6e6d2', boneShade: '#dcc4a8',
+    roof: '#b8503a', roofShade: '#943d2d', wood: '#8a5a3c', woodDark: '#6b432c',
+    demon: '#7b4a86', demonDark: '#5c3564', demonHot: '#ff7a5c', demonEye: '#ffd166',
+    human: '#5d7b99', humanDark: '#44607a', humanTrim: '#f6e6d2', steel: '#a9bccd',
+    blood: '#d1453f', gold: '#f2b544', ink: '#3a2620', shade: 'rgba(58,38,32,0.22)'
+  };
+
+  var SUMMONS = {
+    cut: {
+      name: 'Imp', cost: 8, kind: 'unit', line: 'Chaff. Buys seconds.',
+      unit: { hp: 15, dmg: 4, rate: 0.55, range: 8, speed: 34, radius: 6, aggro: 48, shape: 'imp' }
+    },
+    spire: {
+      name: 'Shrieker', cost: 15, kind: 'unit', line: 'Ranged. Answers archers.',
+      unit: { hp: 13, dmg: 6, rate: 1.0, range: 74, speed: 20, radius: 6, aggro: 84, shape: 'spire', ranged: 'wail' }
+    },
+    horns: {
+      name: 'Goat-kin', cost: 22, kind: 'unit', line: 'Breaks the line. Soaks arrows.',
+      unit: { hp: 64, dmg: 11, rate: 0.85, range: 10, speed: 21, radius: 10, aggro: 50, shape: 'horns' }
+    },
+    pentacle: {
+      name: 'Great Beast', cost: 58, kind: 'unit', line: 'Ends a stage. Two seconds of blindness.',
+      unit: { hp: 240, dmg: 28, rate: 1.05, range: 13, speed: 16, radius: 17, aggro: 62, shape: 'beast', splash: 18 }
+    },
+    ring: {
+      name: 'Ward', cost: 14, kind: 'place', line: 'Eats arrows. Drifts with the demons under it.',
+      place: { type: 'ward', r: 44, life: 12 }
+    },
+    bolt: {
+      name: 'Strike', cost: 20, kind: 'place', line: 'Instant damage where you draw it.',
+      place: { type: 'bolt', r: 28, dmg: 42 }
+    },
+    cross: {
+      name: 'Altar', cost: 14, kind: 'place',
+      line: 'Kills nothing. Mends yours, and theirs take 70% more damage while they stand in it. Two at a time, ten seconds each.',
+      place: { type: 'altar', r: 48, life: 10, heal: 5, amp: 1.7, cap: 2 }
+    }
+  };
+
+  var DEFENDERS = {
+    footman: { hp: 34, dmg: 7, rate: 0.85, range: 10, speed: 20, radius: 7, aggro: 84, shape: 'footman', name: 'Footman', leash: 76 },
+    archer: { hp: 20, dmg: 8, rate: 1.35, range: 92, speed: 17, radius: 6, aggro: 108, shape: 'archer', name: 'Archer', ranged: 'arrow', leash: 40 },
+    knight: { hp: 88, dmg: 15, rate: 1.0, range: 12, speed: 17, radius: 10, aggro: 92, shape: 'knight', name: 'Knight', leash: 90 }
+  };
+
+  /* Four fronts. Each is a different shape of fight, not just more HP:
+     open ground, then buildings to fight around, then a wall with a
+     single gate, then the keep. */
+  function level() {
+    return {
+      stages: [
+        {
+          name: 'The Outskirts', ground: 'field', y: 1500, raidEvery: 17,
+          objectives: [{ key: 'post', kind: 'watchpost', name: 'Watchpost', x: 120, y: 1500, hp: 190, r: 18, worth: 22 }],
+          garrison: [['footman', 0], ['footman', 1], ['footman', 2], ['footman', 3]],
+          respawn: 6.5,
+          props: [
+            { t: 'fence', x: 30, y: 1560, w: 66 }, { t: 'fence', x: 152, y: 1560, w: 62 },
+            { t: 'tree', x: 40, y: 1450 }, { t: 'tree', x: 205, y: 1490 },
+            { t: 'crop', x: 60, y: 1620, w: 50, h: 26 }, { t: 'crop', x: 150, y: 1640, w: 60, h: 24 }
+          ]
+        },
+        {
+          name: 'Millstead', ground: 'village', y: 1120, raidEvery: 16,
+          objectives: [
+            { key: 'cotA', kind: 'cottage', name: 'West Cottage', x: 66, y: 1140, hp: 185, r: 20, worth: 20 },
+            { key: 'cotB', kind: 'cottage', name: 'East Cottage', x: 176, y: 1096, hp: 185, r: 20, worth: 20 }
+          ],
+          garrison: [['footman', 0], ['footman', 1], ['footman', 2], ['footman', 3], ['archer', 4], ['archer', 5]],
+          respawn: 6,
+          props: [
+            { t: 'well', x: 122, y: 1170 }, { t: 'cart', x: 190, y: 1180 },
+            { t: 'tree', x: 26, y: 1060 }, { t: 'crop', x: 30, y: 1230, w: 48, h: 24 },
+            { t: 'fence', x: 96, y: 1216, w: 56 }
+          ]
+        },
+        {
+          name: 'The Palisade', ground: 'muster', y: 740, raidEvery: 15, formation: 'wall',
+          wall: { y: 726, gapX0: 96, gapX1: 144 },
+          objectives: [{ key: 'gate', kind: 'gatehouse', name: 'The Gatehouse', x: 120, y: 726, hp: 430, r: 24, worth: 34 }],
+          garrison: [['archer', 0], ['archer', 1], ['archer', 2], ['archer', 3], ['footman', 4], ['footman', 5], ['footman', 6]],
+          respawn: 5.5,
+          props: [
+            { t: 'brazier', x: 62, y: 700 }, { t: 'brazier', x: 178, y: 700 },
+            { t: 'cart', x: 44, y: 800 }, { t: 'tree', x: 214, y: 812 }
+          ]
+        },
+        {
+          name: 'Blackmoor Keep', ground: 'stone', y: 360, raidEvery: 13,
+          objectives: [{ key: 'keep', kind: 'keep', name: 'Blackmoor Keep', x: 120, y: 348, hp: 900, r: 34, worth: 60 }],
+          garrison: [['knight', 0], ['archer', 1], ['knight', 2], ['archer', 3], ['archer', 4], ['knight', 5], ['footman', 6], ['archer', 7]],
+          respawn: 5,
+          props: [
+            { t: 'brazier', x: 62, y: 430 }, { t: 'brazier', x: 178, y: 430 },
+            { t: 'banner', x: 90, y: 300 }, { t: 'banner', x: 150, y: 300 }
+          ]
+        }
+      ],
+      camera: { objAt: 0.30, spawnAt: 0.87, circleAt: 0.945 },
+      blood: { start: 62, max: 145, regen: 5.4, perKill: 6 },
+      player: { hp: 185, r: 26 }
+    };
+  }
+
+  root.KIT = { SUMMONS: SUMMONS, DEFENDERS: DEFENDERS, VIEW: VIEW, WORLD_H: WORLD_H, PAL: PAL, level: level };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* ---------------------------------------------------------------
+   HORNS — world (staged)
+   Still DOM-free so the balance can be simulated headless.
+   New here: a camera that rides the front line, stages that clear
+   and hand off to the next, and a palisade that only opens at
+   the gate.
+   --------------------------------------------------------------- */
+(function (root) {
+  'use strict';
+
+  var KIT = root.KIT;
+  var VIEW = KIT.VIEW;
+
+  var W = {
+    t: 0, units: [], objs: [], places: [], projs: [], parts: [], events: [],
+    stages: [], stage: 0, walls: [], props: [],
+    camY: 0, camTarget: 0, banner: null,
+    player: null, blood: 0, cfg: null, over: null,
+    kills: 0, losses: 0, summoned: 0, cleared: 0
+  };
+
+  function rnd() { return Math.random(); }
+  function d2(ax, ay, bx, by) { var dx = ax - bx, dy = ay - by; return dx * dx + dy * dy; }
+  function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+
+  /* ---------- pools ---------- */
+
+  function getProj() {
+    for (var i = 0; i < W.projs.length; i++) if (!W.projs[i].active) return W.projs[i];
+    var p = { active: false, x: 0, y: 0, vx: 0, vy: 0, dmg: 0, team: '', kind: '', life: 0, spin: 0 };
+    W.projs.push(p);
+    return p;
+  }
+  function getPart() {
+    for (var i = 0; i < W.parts.length; i++) if (W.parts[i].life <= 0) return W.parts[i];
+    var p = { x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1, tint: 0, size: 1 };
+    W.parts.push(p);
+    return p;
+  }
+  function puff(x, y, n, tint, spread) {
+    spread = spread || 34;
+    for (var i = 0; i < n; i++) {
+      var p = getPart(), a = rnd() * 6.283, s = rnd() * spread;
+      p.x = x; p.y = y; p.vx = Math.cos(a) * s; p.vy = Math.sin(a) * s;
+      p.max = p.life = 0.26 + rnd() * 0.4; p.tint = tint; p.size = 1.2 + rnd() * 2.4;
+    }
+  }
+  function event(type, x, y, life, text) {
+    W.events.push({ type: type, x: x, y: y, life: life, max: life, text: text || '' });
+  }
+
+  /* ---------- camera ---------- */
+
+  function frontObjective() {
+    var best = null;
+    for (var i = 0; i < W.objs.length; i++) {
+      var o = W.objs[i];
+      if (!o.alive) continue;
+      if (!best || o.y > best.y) best = o;      // largest y = nearest to the summoner
+    }
+    return best;
+  }
+
+  function spawnLine() { return W.camY + VIEW.h * W.cfg.camera.spawnAt; }
+  function circleY() { return W.camY + VIEW.h * W.cfg.camera.circleAt; }
+
+  /* The camera holds the current front until the screen is empty of
+     defenders — the building falling is not enough. Advancing is a
+     reward for clearing, not for demolition. */
+  function advanceCheck() {
+    var st = W.stages[W.stage];
+    if (!st || !st.cleared) return;
+    for (var i = 0; i < W.units.length; i++) {
+      var u = W.units[i];
+      if (u.team !== 'human' || u.hp <= 0) continue;
+      if (u.stage === st) return;                                   // its garrison still breathes
+      if (u.y > W.camY - 12 && u.y < W.camY + VIEW.h + 12) return;  // anyone else still on screen
+    }
+    if (W.stage < W.stages.length - 1) {
+      W.stage++;
+      W.banner = { text: W.stages[W.stage].name, life: 2.4, max: 2.4 };
+    }
+  }
+
+  function updateCamera(dt) {
+    advanceCheck();
+    var st = W.stages[W.stage];
+    var live = st ? st.objs.filter(function (o) { return o.alive; }) : [];
+    if (live.length) {
+      var f = live.reduce(function (a, b) { return a.y > b.y ? a : b; });
+      W.camTarget = clamp(f.y - VIEW.h * W.cfg.camera.objAt, 0, KIT.WORLD_H - VIEW.h);
+    }
+    var k = 1 - Math.pow(0.055, dt);
+    W.camY += (W.camTarget - W.camY) * k;
+    W.player.x = VIEW.w * 0.5;
+    W.player.y = circleY();
+  }
+
+  /* ---------- units ---------- */
+
+  function makeUnit(def, team, x, y, corrupt) {
+    var k = corrupt ? 0.6 : 1;
+    return {
+      team: team, shape: def.shape, name: def.name || '',
+      x: x, y: y, hp: def.hp * k, maxHp: def.hp * k,
+      dmg: def.dmg * (corrupt ? 0.7 : 1), rate: def.rate, range: def.range,
+      speed: def.speed * (corrupt ? 0.85 : 1), radius: def.radius, aggro: def.aggro,
+      leash: def.leash || 80, ranged: def.ranged || null, splash: def.splash || 0,
+      cd: 0.25 + rnd() * 0.3, retarget: rnd() * 0.3, target: null, post: null, home: null,
+      hit: 0, corrupt: !!corrupt, face: team === 'demon' ? -1 : 1, raider: false,
+      bob: rnd() * 6.283, swing: 0
+    };
+  }
+
+  function spawnDefender(stage, obj, type, idx, raider) {
+    var def = KIT.DEFENDERS[type];
+    var sx, sy;
+    if (stage.formation === 'wall' && stage.wallY !== null) {
+      /* the palisade musters in a line behind the wall, not in a ring */
+      var slot = idx % 6;
+      sx = 26 + slot * 38 + (idx > 5 ? 18 : 0);
+      sy = stage.wallY - 16 - (idx % 3) * 13;
+      if (raider) { sx = obj.x; sy = obj.y + 18; }
+    } else {
+      var a = -Math.PI / 2 + idx * 1.7 + 0.5;
+      var rr = obj.r + 13 + (idx % 2) * 8;
+      sx = obj.x + Math.cos(a) * rr;
+      sy = obj.y + Math.sin(a) * rr;
+    }
+    var u = makeUnit(def, 'human', clamp(sx, 12, VIEW.w - 12), sy, false);
+    u.type = type;
+    u.home = obj;
+    u.stage = stage;
+    u.post = { x: u.x, y: u.y };
+    u.raider = !!raider;
+    W.units.push(u);
+    return u;
+  }
+
+  /* ---------- reset ---------- */
+
+  function reset() {
+    var L = KIT.level();
+    W.cfg = L;
+    W.t = 0; W.over = null; W.kills = 0; W.losses = 0; W.summoned = 0; W.cleared = 0;
+    W.units.length = 0; W.places.length = 0; W.events.length = 0;
+    W.projs.length = 0; W.parts.length = 0;
+    W.walls = []; W.props = []; W.objs = []; W.stages = [];
+    W.banner = null;
+
+    L.stages.forEach(function (s, si) {
+      var st = { name: s.name, ground: s.ground, y: s.y, index: si, cleared: false, respawn: s.respawn, garrison: s.garrison, timer: s.respawn * 0.55, formation: s.formation || 'ring', raidEvery: s.raidEvery || 16, raidTimer: (s.raidEvery || 16) * 1.5, wallY: s.wall ? s.wall.y : null, objs: [] };
+      s.objectives.forEach(function (o) {
+        var ob = {
+          key: o.key, kind: o.kind, name: o.name, x: o.x, y: o.y,
+          hp: o.hp, maxHp: o.hp, r: o.r, worth: o.worth,
+          alive: true, hit: 0, stage: st, seed: rnd() * 6.283
+        };
+        W.objs.push(ob);
+        st.objs.push(ob);
+      });
+      if (s.wall) W.walls.push({ y: s.wall.y, gapX0: s.wall.gapX0, gapX1: s.wall.gapX1, stage: st });
+      (s.props || []).forEach(function (p) { W.props.push(p); });
+      W.stages.push(st);
+    });
+
+    W.stage = 0;
+    W.player = { x: VIEW.w * 0.5, y: 0, r: L.player.r, hp: L.player.hp, maxHp: L.player.hp, hit: 0 };
+    W.blood = L.blood.start;
+
+    var f = frontObjective();
+    W.camY = clamp(f.y - VIEW.h * L.camera.objAt, 0, KIT.WORLD_H - VIEW.h);
+    W.camTarget = W.camY;
+    W.player.y = circleY();
+
+    W.stages.forEach(function (st) {
+      st.garrison.forEach(function (g, i) {
+        spawnDefender(st, st.objs[i % st.objs.length], g[0], g[1], false);
+      });
+    });
+  }
+
+  /* ---------- damage ---------- */
+
+  /* An altar deals nothing itself — it makes everything else land harder.
+     Overlapping altars take the best multiplier rather than compounding. */
+  function vulnMul(x, y) {
+    var m = 1;
+    for (var i = 0; i < W.places.length; i++) {
+      var pl = W.places[i];
+      if (pl.type !== 'altar') continue;
+      if (d2(x, y, pl.x, pl.y) < pl.r * pl.r && pl.amp > m) m = pl.amp;
+    }
+    return m;
+  }
+
+  function hurt(tg, amt, fromTeam) {
+    if (tg.hp <= 0) return;
+    if (fromTeam === 'demon') amt *= vulnMul(tg.x, tg.y);
+    tg.hp -= amt;
+    tg.hit = 1;
+    if (tg.hp > 0) return;
+
+    if (tg === W.player) { W.over = 'lost'; puff(tg.x, tg.y, 26, 3, 70); return; }
+
+    if (tg.alive !== undefined) {
+      tg.alive = false; tg.hp = 0;
+      W.blood = Math.min(W.cfg.blood.max, W.blood + tg.worth);
+      puff(tg.x, tg.y, 26, 1, 72);
+      event('fall', tg.x, tg.y, 1.6, tg.name);
+      for (var i = 0; i < W.units.length; i++) if (W.units[i].home === tg) { W.units[i].home = null; W.units[i].retarget = 0; }
+      var st = tg.stage;
+      if (st && !st.cleared && st.objs.every(function (o) { return !o.alive; })) {
+        st.cleared = true;
+        W.cleared++;
+        /* Nothing left to hold, and the summoner is right there: the
+           garrison turns downhill rather than falling back. */
+        var left = 0;
+        for (var r = 0; r < W.units.length; r++) {
+          var d = W.units[r];
+          if (d.team !== 'human' || d.hp <= 0 || d.stage !== st) continue;
+          d.raider = true; d.home = null; d.post = null; d.retarget = 0;
+          left++;
+        }
+        W.banner = left
+          ? { text: 'Last stand — clear the field', life: 2.4, max: 2.4 }
+          : { text: W.stages[st.index + 1] ? W.stages[st.index + 1].name : 'The keep is broken', life: 2.4, max: 2.4 };
+      }
+      return;
+    }
+
+    puff(tg.x, tg.y, 6, tg.team === 'demon' ? 0 : 2, 32);
+    if (tg.team === 'human') {
+      W.kills++;
+      if (fromTeam === 'demon') W.blood = Math.min(W.cfg.blood.max, W.blood + W.cfg.blood.perKill);
+    } else W.losses++;
+  }
+
+  /* ---------- targeting ---------- */
+
+  function nearestUnit(x, y, team, maxD) {
+    var best = null, bd = maxD * maxD;
+    for (var i = 0; i < W.units.length; i++) {
+      var u = W.units[i];
+      if (u.team !== team || u.hp <= 0) continue;
+      var d = d2(x, y, u.x, u.y);
+      if (d < bd) { bd = d; best = u; }
+    }
+    return best;
+  }
+
+  function nearestObj(x, y) {
+    var best = null, bd = Infinity;
+    for (var i = 0; i < W.objs.length; i++) {
+      var o = W.objs[i];
+      if (!o.alive) continue;
+      var d = d2(x, y, o.x, o.y);
+      if (d < bd) { bd = d; best = o; }
+    }
+    return best;
+  }
+
+  function pickTarget(u) {
+    if (u.team === 'demon') {
+      u.post = null;
+      u.target = nearestUnit(u.x, u.y, 'human', u.aggro) || nearestObj(u.x, u.y);
+      return;
+    }
+    if (u.raider) {                                  // sent to break the ritual
+      var near = nearestUnit(u.x, u.y, 'demon', u.aggro * 0.7);
+      u.post = null;
+      u.target = near || W.player;
+      return;
+    }
+    if (u.home && !u.home.alive) u.home = null;
+    if (!u.home) {
+      var fb = nearestObj(u.x, u.y);
+      if (fb) {
+        u.home = fb;
+        var a = rnd() * 6.283;
+        u.post = { x: clamp(fb.x + Math.cos(a) * (fb.r + 15), 10, VIEW.w - 10), y: fb.y + Math.sin(a) * (fb.r + 15) };
+      } else { u.post = null; u.target = W.player; return; }
+    }
+    var foe = nearestUnit(u.x, u.y, 'demon', u.aggro);
+    if (foe && d2(foe.x, foe.y, u.home.x, u.home.y) < (u.leash + u.range) * (u.leash + u.range)) u.target = foe;
+    else u.target = null;
+  }
+
+  /* ---------- combat ---------- */
+
+  function fire(u, tg) {
+    var p = getProj();
+    p.active = true; p.x = u.x; p.y = u.y; p.team = u.team; p.dmg = u.dmg; p.kind = u.ranged; p.life = 2.6;
+    var dx = tg.x - u.x, dy = tg.y - u.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+    var sp = p.kind === 'arrow' ? 124 : 108;
+    p.vx = dx / d * sp; p.vy = dy / d * sp;
+    p.spin = Math.atan2(dy, dx);
+  }
+
+  function strike(u, tg) {
+    u.swing = 0.22;
+    if (u.ranged) { fire(u, tg); return; }
+    hurt(tg, u.dmg, u.team);
+    if (u.splash) {
+      var foe = u.team === 'demon' ? 'human' : 'demon';
+      for (var i = 0; i < W.units.length; i++) {
+        var o = W.units[i];
+        if (o === tg || o.team !== foe || o.hp <= 0) continue;
+        if (d2(o.x, o.y, tg.x, tg.y) < u.splash * u.splash) hurt(o, u.dmg * 0.5, u.team);
+      }
+    }
+  }
+
+  /* ---------- walls ---------- */
+
+  function wallBetween(y0, y1) {
+    for (var i = 0; i < W.walls.length; i++) {
+      var w = W.walls[i];
+      if ((y0 - w.y) * (y1 - w.y) < 0) return w;
+    }
+    return null;
+  }
+
+  function enforceWalls(u, prevY) {
+    for (var i = 0; i < W.walls.length; i++) {
+      var w = W.walls[i];
+      var inGap = u.x > w.gapX0 - u.radius && u.x < w.gapX1 + u.radius;
+      if (inGap) continue;
+      var wasBelow = prevY > w.y;
+      var isBelow = u.y > w.y;
+      if (wasBelow !== isBelow) u.y = w.y + (wasBelow ? 1 : -1) * (u.radius + 2);
+    }
+  }
+
+  /* ---------- per-unit step ---------- */
+
+  function stepUnit(u, dt) {
+    u.cd -= dt;
+    if (u.hit > 0) u.hit -= dt * 4;
+    if (u.swing > 0) u.swing -= dt;
+    u.bob += dt * 7;
+    u.retarget -= dt;
+    if (u.retarget <= 0) { pickTarget(u); u.retarget = 0.26 + rnd() * 0.22; }
+
+    var tg = u.target;
+    if (tg && (tg.hp <= 0 || tg.alive === false)) { pickTarget(u); tg = u.target; }
+    var aim = tg || u.post;
+    if (!aim) return;
+
+    var ax = aim.x, ay = aim.y;
+    var w = wallBetween(u.y, ay);                 // funnel through the gate
+    if (w) {
+      var gateX = (w.gapX0 + w.gapX1) * 0.5;
+      if (u.x < w.gapX0 + 4 || u.x > w.gapX1 - 4) {
+        ax = gateX;
+        ay = w.y + (u.y > w.y ? 16 : -16);
+        tg = null;
+      }
+    }
+
+    var dx = ax - u.x, dy = ay - u.y;
+    var d = Math.sqrt(dx * dx + dy * dy) || 0.001;
+    if (Math.abs(dx) > 1) u.face = dx > 0 ? 1 : -1;
+    var prevY = u.y;
+
+    if (!tg) {
+      if (d > 5) { u.x += dx / d * u.speed * 0.9 * dt; u.y += dy / d * u.speed * 0.9 * dt; }
+      enforceWalls(u, prevY);
+      return;
+    }
+
+    var reach = u.range + (tg.r || tg.radius || 0);
+    if (d > reach) {
+      u.x += dx / d * u.speed * dt;
+      u.y += dy / d * u.speed * dt;
+      enforceWalls(u, prevY);
+    } else if (u.cd <= 0) {
+      strike(u, tg);
+      u.cd = u.rate;
+    }
+  }
+
+  /* ---------- projectiles ---------- */
+
+  function stepProjectiles(dt) {
+    for (var i = 0; i < W.projs.length; i++) {
+      var p = W.projs[i];
+      if (!p.active) continue;
+      p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
+      if (p.life <= 0 || p.x < -20 || p.x > VIEW.w + 20) { p.active = false; continue; }
+
+      if (p.team === 'human') {
+        var blocked = false;
+        for (var w = 0; w < W.places.length; w++) {
+          var pl = W.places[w];
+          if (pl.type === 'ward' && d2(p.x, p.y, pl.x, pl.y) < pl.r * pl.r) { blocked = true; break; }
+        }
+        if (blocked) { p.active = false; puff(p.x, p.y, 3, 4, 20); continue; }
+      }
+
+      var foe = p.team === 'demon' ? 'human' : 'demon', hitIt = false;
+      for (var j = 0; j < W.units.length; j++) {
+        var u = W.units[j];
+        if (u.team !== foe || u.hp <= 0) continue;
+        var rr = u.radius + 3;
+        if (d2(p.x, p.y, u.x, u.y) < rr * rr) { hurt(u, p.dmg, p.team); hitIt = true; break; }
+      }
+      if (!hitIt && p.team === 'demon') {
+        for (var k = 0; k < W.objs.length; k++) {
+          var o = W.objs[k];
+          if (o.alive && d2(p.x, p.y, o.x, o.y) < o.r * o.r) { hurt(o, p.dmg, p.team); hitIt = true; break; }
+        }
+      }
+      if (!hitIt && p.team === 'human' && W.player.hp > 0 && d2(p.x, p.y, W.player.x, W.player.y) < W.player.r * W.player.r) {
+        hurt(W.player, p.dmg, p.team); hitIt = true;
+      }
+      if (hitIt) p.active = false;
+    }
+  }
+
+  /* ---------- placements ---------- */
+
+  function stepPlaces(dt) {
+    for (var z = 0; z < W.units.length; z++) W.units[z].weak = false;
+    for (var i = W.places.length - 1; i >= 0; i--) {
+      var pl = W.places[i];
+      pl.life -= dt;
+
+      if (pl.type === 'ward') {
+        /* The static circle was a trap: 7% of demons were ever inside it.
+           It now drifts toward whatever of yours is under it. */
+        var cx = 0, cy = 0, n = 0;
+        for (var d = 0; d < W.units.length; d++) {
+          var m = W.units[d];
+          if (m.team !== 'demon' || m.hp <= 0) continue;
+          if (d2(m.x, m.y, pl.x, pl.y) > pl.r * pl.r) continue;
+          cx += m.x; cy += m.y; n++;
+        }
+        if (n) {
+          cx /= n; cy /= n;
+          var vx = cx - pl.x, vy = cy - pl.y, vd = Math.sqrt(vx * vx + vy * vy);
+          var step = Math.min(vd, 26 * dt);
+          if (vd > 0.01) { pl.x += vx / vd * step; pl.y += vy / vd * step; }
+        }
+        pl.covering = n;
+      }
+
+      if (pl.type === 'altar') {
+        for (var j = 0; j < W.units.length; j++) {
+          var u = W.units[j];
+          if (u.hp <= 0 || d2(u.x, u.y, pl.x, pl.y) > pl.r * pl.r) continue;
+          if (u.team === 'demon') u.hp = Math.min(u.maxHp, u.hp + pl.heal * dt);
+          else u.weak = true;
+        }
+      }
+      if (pl.life <= 0) { puff(pl.x, pl.y, 7, 4, 28); W.places.splice(i, 1); }
+    }
+  }
+
+  /* ---------- tidy ---------- */
+
+  function separate() {
+    var n = W.units.length, i, j;
+    for (i = 0; i < n; i++) {
+      var a = W.units[i];
+      if (a.hp <= 0) continue;
+      for (j = i + 1; j < n; j++) {
+        var b = W.units[j];
+        if (b.hp <= 0 || b.team !== a.team) continue;
+        var dx = b.x - a.x, dy = b.y - a.y, rr = a.radius + b.radius, dd = dx * dx + dy * dy;
+        if (dd >= rr * rr || dd === 0) continue;
+        var dl = Math.sqrt(dd), push = (rr - dl) * 0.5;
+        var nx = dx / dl * push, ny = dy / dl * push;
+        a.x -= nx; a.y -= ny; b.x += nx; b.y += ny;
+      }
+    }
+    for (i = 0; i < n; i++) {
+      var m = W.units[i];
+      if (m.hp <= 0) continue;
+      for (j = 0; j < W.objs.length; j++) {
+        var ob = W.objs[j];
+        if (!ob.alive) continue;
+        var ddx = m.x - ob.x, ddy = m.y - ob.y, min = ob.r + m.radius, q = ddx * ddx + ddy * ddy;
+        if (q >= min * min || q === 0) continue;
+        var qd = Math.sqrt(q);
+        m.x = ob.x + ddx / qd * min;
+        m.y = ob.y + ddy / qd * min;
+      }
+      m.x = clamp(m.x, 8, VIEW.w - 8);
+      if (m.team === 'demon' && m.y < W.camY + 14) m.y = W.camY + 14;
+    }
+  }
+
+  function compact() {
+    var w = 0;
+    for (var i = 0; i < W.units.length; i++) if (W.units[i].hp > 0) W.units[w++] = W.units[i];
+    W.units.length = w;
+  }
+
+  function stepGarrisons(dt) {
+    for (var i = 0; i < W.stages.length; i++) {
+      var st = W.stages[i];
+      if (st.cleared) continue;
+      st.raidTimer -= dt;
+      if (st.raidTimer <= 0) {
+        st.raidTimer = st.raidEvery;
+        var liveR = st.objs.filter(function (o) { return o.alive; });
+        if (liveR.length && st.index === W.stage) {
+          var gr = st.garrison[Math.floor(rnd() * st.garrison.length)];
+          spawnDefender(st, liveR[0], gr[0], 9, true);
+        }
+      }
+      st.timer -= dt;
+      if (st.timer > 0) continue;
+      st.timer = st.respawn;
+      var held = 0;
+      for (var j = 0; j < W.units.length; j++) if (W.units[j].stage === st && W.units[j].hp > 0) held++;
+      if (held >= st.garrison.length) continue;
+      var live = st.objs.filter(function (o) { return o.alive; });
+      if (!live.length) continue;
+      var g = st.garrison[held % st.garrison.length];
+      spawnDefender(st, live[held % live.length], g[0], g[1], false);
+    }
+  }
+
+  /* ---------- main step ---------- */
+
+  function step(dt) {
+    if (W.over) return;
+    W.t += dt;
+    W.blood = Math.min(W.cfg.blood.max, W.blood + W.cfg.blood.regen * dt);
+
+    stepGarrisons(dt);
+    for (var i = 0; i < W.units.length; i++) if (W.units[i].hp > 0) stepUnit(W.units[i], dt);
+    stepProjectiles(dt);
+    stepPlaces(dt);
+    separate();
+    compact();
+    updateCamera(dt);
+
+    for (var p = 0; p < W.parts.length; p++) {
+      var q = W.parts[p];
+      if (q.life <= 0) continue;
+      q.life -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= 0.93; q.vy *= 0.93;
+    }
+    for (var e = W.events.length - 1; e >= 0; e--) { W.events[e].life -= dt; if (W.events[e].life <= 0) W.events.splice(e, 1); }
+    for (var o = 0; o < W.objs.length; o++) if (W.objs[o].hit > 0) W.objs[o].hit -= dt * 3;
+    if (W.player.hit > 0) W.player.hit -= dt * 3;
+    if (W.banner) { W.banner.life -= dt; if (W.banner.life <= 0) W.banner = null; }
+
+    if (W.player.hp <= 0) W.over = 'lost';
+    else if (!W.objs.some(function (x) { return x.alive; })) W.over = 'won';
+  }
+
+  /* ---------- casting ---------- */
+
+  function cast(id, cx, cy, corrupt) {
+    var s = KIT.SUMMONS[id];
+    if (!s) return { ok: false, reason: 'unknown' };
+    if (s.place && s.place.cap) {
+      var live = 0;
+      for (var c = 0; c < W.places.length; c++) if (W.places[c].type === s.place.type) live++;
+      if (live >= s.place.cap) return { ok: false, reason: 'cap', name: s.name, cap: s.place.cap };
+    }
+    if (W.blood < s.cost) return { ok: false, reason: 'blood', name: s.name, cost: s.cost };
+    W.blood -= s.cost;
+    W.summoned++;
+
+    if (s.kind === 'unit') {
+      var x = clamp(cx, 20, VIEW.w - 20);
+      var y = spawnLine();
+      var u = makeUnit(s.unit, 'demon', x, y, corrupt);
+      u.type = id; u.name = s.name;
+      W.units.push(u);
+      puff(x, y, 12, 0, 40);
+      event('summon', x, y, 0.6);
+      return { ok: true, name: s.name, corrupt: !!corrupt, x: x, y: y };
+    }
+
+    var px = clamp(cx, 16, VIEW.w - 16);
+    var py = clamp(cy, W.camY + 12, W.camY + VIEW.h - 12);
+    var pd = s.place;
+
+    if (pd.type === 'bolt') {
+      var r = pd.r * (corrupt ? 0.75 : 1), dmg = pd.dmg * (corrupt ? 0.6 : 1);
+      for (var i = 0; i < W.units.length; i++) {
+        var t = W.units[i];
+        if (t.team === 'human' && t.hp > 0 && d2(t.x, t.y, px, py) < r * r) hurt(t, dmg, 'demon');
+      }
+      for (var j = 0; j < W.objs.length; j++) {
+        var ob = W.objs[j];
+        if (ob.alive && d2(ob.x, ob.y, px, py) < (r + ob.r) * (r + ob.r)) hurt(ob, dmg * 0.7, 'demon');
+      }
+      puff(px, py, 20, 1, 90);
+      event('bolt', px, py, 0.45);
+      return { ok: true, name: s.name, corrupt: !!corrupt, x: px, y: py };
+    }
+
+    W.places.push({
+      type: pd.type, x: px, y: py,
+      r: pd.r * (corrupt ? 0.75 : 1),
+      life: pd.life * (corrupt ? 0.7 : 1),
+      maxLife: pd.life * (corrupt ? 0.7 : 1),
+      heal: pd.heal || 0, amp: pd.amp || 1, covering: 0
+    });
+    event('summon', px, py, 0.6);
+    return { ok: true, name: s.name, corrupt: !!corrupt, x: px, y: py };
+  }
+
+  root.WORLD = { W: W, reset: reset, step: step, cast: cast, vulnMul: vulnMul, VIEW: VIEW, spawnLine: spawnLine };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* ---------------------------------------------------------------
+   HORNS — presentation layer
+   Terrain is baked once into an offscreen strip and blitted as a
+   single drawImage per frame; only actors are drawn live. Nothing
+   uses shadowBlur or gradients in the per-unit path.
+   --------------------------------------------------------------- */
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var K = window.KIT, P = K.PAL, V = K.VIEW, WD = window.WORLD, W = WD.W;
+
+  var MAX_D = 1.70, CORRUPT_D = 2.40, MIN_EDGE = 0.20, SETTLE = 300;
+  var TS = 2;                                   // terrain bake scale
+
+  var cv = $('view'), ctx = cv.getContext('2d');
+  var SC = 1, OX = 0, OY = 0, DPR = 1;
+  var terr = null;
+  var BANK = [];
+  var strokes = [], drawing = false, settleTimer = null;
+  var toasts = [], flashes = [];
+  var running = false, lastNow = 0, acc = 0;
+
+  window.GLYPHS.forEach(function (g) {
+    BANK.push({ id: g.id, name: g.name, cloud: window.PDollar.normalize(g.ideal) });
+  });
+
+  /* ---------- layout ---------- */
+
+  function resize() {
+    var r = cv.parentElement.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(r.width * DPR);
+    cv.height = Math.round(r.height * DPR);
+    cv.style.width = r.width + 'px';
+    cv.style.height = r.height + 'px';
+    SC = Math.min(r.width / V.w, r.height / V.h);
+    OX = (r.width - V.w * SC) / 2;
+    OY = (r.height - V.h * SC) / 2;
+  }
+
+  function worldPt(e) {
+    var r = cv.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left - OX) / SC,
+      y: (e.clientY - r.top - OY) / SC + W.camY
+    };
+  }
+
+  function setWorldTransform() {
+    ctx.setTransform(DPR * SC, 0, 0, DPR * SC, DPR * OX, DPR * (OY - W.camY * SC));
+  }
+  function setScreenTransform() {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  /* ---------- blocky primitives ---------- */
+
+  function rect(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
+  function poly(g, pts, c) {
+    g.fillStyle = c; g.beginPath();
+    g.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+    g.closePath(); g.fill();
+  }
+  function disc(g, x, y, r, c) { g.fillStyle = c; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); }
+  function shadow(g, x, y, rx) {
+    g.fillStyle = P.shade; g.beginPath();
+    g.ellipse(x, y, rx, rx * 0.42, 0, 0, 6.2832); g.fill();
+  }
+
+  /* ---------- terrain bake ---------- */
+
+  function seeded(n) { var s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); }
+
+  function bandFor(y) {
+    var best = W.stages[0];
+    for (var i = 0; i < W.stages.length; i++) if (Math.abs(W.stages[i].y - y) < Math.abs(best.y - y)) best = W.stages[i];
+    return best.ground;
+  }
+
+  function bakeTerrain() {
+    var c = document.createElement('canvas');
+    c.width = V.w * TS; c.height = K.WORLD_H * TS;
+    var g = c.getContext('2d');
+    g.setTransform(TS, 0, 0, TS, 0, 0);
+
+    for (var y = 0; y < K.WORLD_H; y += 4) {
+      var b = bandFor(y);
+      var base = b === 'stone' ? '#b9a894' : b === 'muster' ? '#c9855e' : b === 'village' ? '#c97a52' : P.earth;
+      rect(g, 0, y, V.w, 4, base);
+    }
+    for (var yy = 0; yy < K.WORLD_H; yy += 4) {
+      var t = seeded(yy);
+      if (t > 0.72) rect(g, 0, yy, V.w, 4, 'rgba(255,255,255,0.045)');
+      else if (t < 0.16) rect(g, 0, yy, V.w, 4, 'rgba(58,38,32,0.05)');
+    }
+
+    // sage crop patches and pebbles, deterministic so nothing crawls
+    for (var i = 0; i < 460; i++) {
+      var px = seeded(i * 3.1) * V.w;
+      var py = seeded(i * 7.7) * K.WORLD_H;
+      var b2 = bandFor(py);
+      var s = 1.4 + seeded(i * 2.3) * 2.6;
+      if (b2 === 'stone') rect(g, px, py, s * 1.6, s, 'rgba(255,255,255,0.10)');
+      else if (seeded(i * 5.9) > 0.55) rect(g, px, py, s, s * 0.8, 'rgba(147,163,124,0.5)');
+      else rect(g, px, py, s, s * 0.8, 'rgba(164,82,58,0.35)');
+    }
+
+    // the road up the middle
+    for (var ry = 0; ry < K.WORLD_H; ry += 6) {
+      var wob = Math.sin(ry * 0.011) * 14 + Math.sin(ry * 0.031) * 6;
+      rect(g, 120 + wob - 17, ry, 34, 6, 'rgba(224,170,121,0.42)');
+    }
+
+    W.props.forEach(function (p) { drawProp(g, p); });
+    W.walls.forEach(function (w) { drawWall(g, w); });
+
+    terr = c;
+  }
+
+  function drawProp(g, p) {
+    if (p.t === 'fence') {
+      rect(g, p.x, p.y, p.w, 3, P.wood);
+      for (var i = 0; i <= p.w; i += 11) rect(g, p.x + i, p.y - 6, 3, 11, P.woodDark);
+    } else if (p.t === 'tree') {
+      shadow(g, p.x + 2, p.y + 9, 11);
+      rect(g, p.x - 2, p.y, 4, 10, P.woodDark);
+      rect(g, p.x - 11, p.y - 17, 22, 18, P.sageDark);
+      rect(g, p.x - 8, p.y - 20, 16, 18, P.sage);
+      rect(g, p.x - 5, p.y - 18, 8, 6, '#a8b892');
+    } else if (p.t === 'crop') {
+      rect(g, p.x, p.y, p.w, p.h, 'rgba(147,163,124,0.62)');
+      for (var r = 0; r < p.h; r += 5) rect(g, p.x, p.y + r, p.w, 2, 'rgba(117,133,95,0.7)');
+    } else if (p.t === 'well') {
+      shadow(g, p.x, p.y + 7, 10);
+      rect(g, p.x - 9, p.y - 6, 18, 13, P.boneShade);
+      rect(g, p.x - 6, p.y - 3, 12, 7, '#4a3a34');
+      rect(g, p.x - 10, p.y - 9, 20, 4, P.bone);
+    } else if (p.t === 'cart') {
+      shadow(g, p.x, p.y + 6, 12);
+      rect(g, p.x - 12, p.y - 7, 24, 11, P.wood);
+      rect(g, p.x - 12, p.y - 7, 24, 3, '#a06f4a');
+      disc(g, p.x - 7, p.y + 4, 4, P.woodDark);
+      disc(g, p.x + 7, p.y + 4, 4, P.woodDark);
+    } else if (p.t === 'brazier') {
+      shadow(g, p.x, p.y + 5, 7);
+      rect(g, p.x - 3, p.y - 2, 6, 8, '#5d5148');
+      rect(g, p.x - 6, p.y - 7, 12, 6, '#7a6a5c');
+      rect(g, p.x - 4, p.y - 11, 8, 5, P.gold);
+      rect(g, p.x - 2, p.y - 14, 4, 4, '#ff9d4a');
+    } else if (p.t === 'banner') {
+      rect(g, p.x - 1, p.y, 2, 22, P.woodDark);
+      rect(g, p.x - 7, p.y, 14, 15, P.human);
+      rect(g, p.x - 7, p.y + 11, 14, 4, P.humanDark);
+      rect(g, p.x - 3, p.y + 4, 6, 6, P.humanTrim);
+    }
+  }
+
+  function drawWall(g, w) {
+    for (var x = 0; x < V.w; x += 8) {
+      if (x + 8 > w.gapX0 && x < w.gapX1) continue;
+      rect(g, x, w.y - 11, 8, 18, P.wood);
+      rect(g, x, w.y - 11, 8, 4, '#a06f4a');
+      rect(g, x + 6, w.y - 11, 2, 18, P.woodDark);
+      poly(g, [[x, w.y - 11], [x + 4, w.y - 16], [x + 8, w.y - 11]], '#a06f4a');
+    }
+    rect(g, 0, w.y + 7, V.w, 3, 'rgba(58,38,32,0.25)');
+  }
+
+  /* ---------- actors ---------- */
+
+  function tint(g, x, y, w, h, a) { g.fillStyle = 'rgba(255,240,230,' + a + ')'; g.fillRect(x, y, w, h); }
+
+  function drawUnit(u) {
+    var g = ctx;
+    var bob = u.target ? Math.sin(u.bob) * 0.7 : 0;
+    var x = u.x, y = u.y + bob;
+    var f = u.face;
+    var hit = u.hit > 0 ? Math.min(1, u.hit) : 0;
+    var sw = u.swing > 0 ? u.swing / 0.22 : 0;
+
+    shadow(g, u.x, u.y + u.radius * 0.5, u.radius * 0.95);
+
+    var body = u.team === 'demon' ? (u.corrupt ? '#5e4a63' : P.demon) : P.human;
+    var dark = u.team === 'demon' ? P.demonDark : P.humanDark;
+
+    if (u.shape === 'imp') {
+      rect(g, x - 4, y - 3, 8, 8, body);
+      rect(g, x - 4, y + 2, 8, 3, dark);
+      rect(g, x - 3.5, y - 9, 7, 6, body);
+      poly(g, [[x - 3.5, y - 9], [x - 4.5, y - 13], [x - 1, y - 9]], P.demonHot);
+      poly(g, [[x + 3.5, y - 9], [x + 4.5, y - 13], [x + 1, y - 9]], P.demonHot);
+      rect(g, x - 2 + f, y - 7, 1.6, 1.6, P.demonEye);
+      rect(g, x + 0.6 + f, y - 7, 1.6, 1.6, P.demonEye);
+    } else if (u.shape === 'spire') {
+      rect(g, x - 3.5, y - 5, 7, 10, body);
+      rect(g, x - 3.5, y + 2, 7, 3, dark);
+      poly(g, [[x - 4, y - 5], [x, y - 15], [x + 4, y - 5]], body);
+      rect(g, x - 2, y - 8, 4, 3, '#2a1a2e');
+      rect(g, x - 2, y - 11, 1.6, 1.6, P.demonHot);
+      rect(g, x + 0.5, y - 11, 1.6, 1.6, P.demonHot);
+    } else if (u.shape === 'horns') {
+      rect(g, x - 7, y - 6, 14, 13, body);
+      rect(g, x - 7, y + 3, 14, 4, dark);
+      rect(g, x - 5, y - 13, 10, 8, body);
+      poly(g, [[x - 5, y - 12], [x - 13, y - 17], [x - 12, y - 10], [x - 5, y - 8]], P.bone);
+      poly(g, [[x + 5, y - 12], [x + 13, y - 17], [x + 12, y - 10], [x + 5, y - 8]], P.bone);
+      rect(g, x - 3.4, y - 11, 2.4, 2.4, P.demonHot);
+      rect(g, x + 1, y - 11, 2.4, 2.4, P.demonHot);
+      rect(g, x - 2 + sw * 5 * f, y - 2, 4, 5, dark);
+    } else if (u.shape === 'beast') {
+      rect(g, x - 13, y - 11, 26, 22, body);
+      rect(g, x - 13, y + 5, 26, 6, dark);
+      rect(g, x - 9, y - 21, 18, 11, body);
+      poly(g, [[x - 9, y - 20], [x - 20, y - 30], [x - 17, y - 17], [x - 9, y - 14]], P.bone);
+      poly(g, [[x + 9, y - 20], [x + 20, y - 30], [x + 17, y - 17], [x + 9, y - 14]], P.bone);
+      rect(g, x - 6, y - 18, 3.4, 3.4, P.demonHot);
+      rect(g, x + 2.6, y - 18, 3.4, 3.4, P.demonHot);
+      rect(g, x - 5, y - 12, 10, 3, '#2a1a2e');
+      rect(g, x - 15 - sw * 4, y - 4, 5, 9, dark);
+      rect(g, x + 10 + sw * 4, y - 4, 5, 9, dark);
+    } else if (u.shape === 'footman') {
+      rect(g, x - 5, y - 5, 10, 11, body);
+      rect(g, x - 5, y + 2, 10, 4, dark);
+      rect(g, x - 2, y - 5, 4, 8, P.humanTrim);
+      rect(g, x - 4, y - 12, 8, 7, P.steel);
+      rect(g, x - 4, y - 9, 8, 2, '#3a4a5c');
+      rect(g, x + f * (5 + sw * 5) - 1, y - 14, 2, 20, P.wood);
+      poly(g, [[x + f * (5 + sw * 5) - 2.6, y - 14], [x + f * (5 + sw * 5), y - 20], [x + f * (5 + sw * 5) + 2.6, y - 14]], P.steel);
+    } else if (u.shape === 'archer') {
+      rect(g, x - 4, y - 5, 8, 11, body);
+      rect(g, x - 4, y + 2, 8, 4, dark);
+      rect(g, x - 4, y - 12, 8, 8, '#6d8aa6');
+      rect(g, x - 2, y - 8, 4, 3, P.humanTrim);
+      g.strokeStyle = P.wood; g.lineWidth = 1.8;
+      g.beginPath(); g.arc(x + f * 6, y - 4, 7, -1.15, 1.15); g.stroke();
+      rect(g, x + f * (5 + sw * 3), y - 5, 1.4, 10, '#e6dccb');
+    } else if (u.shape === 'knight') {
+      rect(g, x - 7, y - 7, 14, 14, P.steel);
+      rect(g, x - 7, y + 3, 14, 4, '#7c93a6');
+      rect(g, x - 4, y - 7, 8, 10, P.human);
+      rect(g, x - 5, y - 16, 10, 9, P.steel);
+      rect(g, x - 5, y - 12, 10, 2.4, '#33445a');
+      rect(g, x - 1.4, y - 20, 3, 5, P.blood);
+      rect(g, x + f * (7 + sw * 6) - 1.4, y - 15, 3, 20, '#dfe7ee');
+      rect(g, x + f * (7 + sw * 6) - 4, y - 3, 8, 2.6, P.gold);
+    }
+
+    if (u.weak) {
+      g.fillStyle = 'rgba(155,96,168,0.42)';
+      g.fillRect(x - u.radius - 2, y - u.radius * 2.2, u.radius * 2 + 4, u.radius * 2.6);
+      poly(g, [[x - 4, y - u.radius * 2.4 - 12], [x + 4, y - u.radius * 2.4 - 12], [x, y - u.radius * 2.4 - 6]], P.demonHot);
+    }
+    if (hit) tint(g, x - u.radius - 2, y - u.radius * 2.2, u.radius * 2 + 4, u.radius * 2.6, hit * 0.55);
+
+    if (u.hp < u.maxHp) {
+      var bw = u.radius * 2.2;
+      rect(g, x - bw / 2, y - u.radius * 2.4 - 6, bw, 2.6, 'rgba(58,38,32,0.55)');
+      rect(g, x - bw / 2, y - u.radius * 2.4 - 6, bw * (u.hp / u.maxHp), 2.6,
+        u.team === 'demon' ? P.demonHot : P.gold);
+    }
+  }
+
+  function drawObjective(o) {
+    var g = ctx, x = o.x, y = o.y;
+    if (!o.alive) {
+      shadow(g, x, y + 3, o.r * 0.8);
+      rect(g, x - o.r * 0.7, y - 4, o.r * 1.4, 9, '#8d6e58');
+      rect(g, x - o.r * 0.45, y - 9, o.r * 0.6, 6, '#a5836a');
+      rect(g, x + 2, y - 7, o.r * 0.4, 5, '#7d6152');
+      return;
+    }
+    var frac = o.hp / o.maxHp;
+    shadow(g, x, y + o.r * 0.45, o.r);
+
+    if (o.kind === 'watchpost') {
+      rect(g, x - 12, y - 6, 24, 14, P.wood);
+      rect(g, x - 12, y + 4, 24, 4, P.woodDark);
+      rect(g, x - 14, y - 14, 28, 9, '#a06f4a');
+      poly(g, [[x - 15, y - 14], [x, y - 24], [x + 15, y - 14]], P.roof);
+      rect(g, x - 4, y - 4, 8, 10, '#4a3a34');
+    } else if (o.kind === 'cottage') {
+      rect(g, x - 15, y - 8, 30, 17, P.bone);
+      rect(g, x - 15, y + 4, 30, 5, P.boneShade);
+      poly(g, [[x - 18, y - 8], [x, y - 22], [x + 18, y - 8]], P.roof);
+      poly(g, [[x - 18, y - 8], [x - 9, y - 15], [x + 18, y - 8]], P.roofShade);
+      rect(g, x - 4, y - 2, 8, 11, P.woodDark);
+      rect(g, x + 7, y - 5, 5, 5, P.gold);
+      rect(g, x - 12, y - 5, 5, 5, P.gold);
+      rect(g, x + 8, y - 21, 5, 8, P.boneShade);
+    } else if (o.kind === 'gatehouse') {
+      rect(g, x - 24, y - 12, 12, 26, '#b0a08c');
+      rect(g, x + 12, y - 12, 12, 26, '#b0a08c');
+      rect(g, x - 24, y - 16, 12, 5, '#c6b6a0');
+      rect(g, x + 12, y - 16, 12, 5, '#c6b6a0');
+      rect(g, x - 12, y - 8, 24, 22, P.woodDark);
+      for (var b = -12; b < 12; b += 6) rect(g, x + b, y - 8, 4, 22, P.wood);
+      rect(g, x - 12, y - 10, 24, 3, '#8a7a68');
+      rect(g, x - 26, y - 22, 14, 6, '#c6b6a0');
+      rect(g, x + 12, y - 22, 14, 6, '#c6b6a0');
+    } else if (o.kind === 'keep') {
+      rect(g, x - 28, y - 18, 56, 38, '#b0a08c');
+      rect(g, x - 28, y + 10, 56, 10, '#8f8071');
+      for (var c = -28; c < 28; c += 10) rect(g, x + c, y - 24, 6, 7, '#c6b6a0');
+      rect(g, x - 34, y - 12, 8, 32, '#9d8e7c');
+      rect(g, x + 26, y - 12, 8, 32, '#9d8e7c');
+      rect(g, x - 7, y + 2, 14, 18, P.woodDark);
+      rect(g, x - 18, y - 10, 7, 9, '#4a4038');
+      rect(g, x + 11, y - 10, 7, 9, '#4a4038');
+      rect(g, x - 3, y - 40, 2, 17, '#6b5c4c');
+      rect(g, x - 1, y - 40, 13, 9, P.human);
+    }
+
+    if (frac < 0.66) {
+      rect(g, x - o.r * 0.5, y - 6, 3, 12, 'rgba(58,38,32,0.5)');
+      rect(g, x + o.r * 0.25, y - 12, 2.4, 9, 'rgba(58,38,32,0.45)');
+    }
+    if (frac < 0.34) {
+      rect(g, x - o.r * 0.8, y - o.r * 0.7, o.r * 1.6, o.r * 1.4, 'rgba(58,38,32,0.22)');
+      rect(g, x - 8, y - o.r - 12, 5, 5, 'rgba(70,60,58,0.5)');
+      rect(g, x + 3, y - o.r - 17, 7, 6, 'rgba(70,60,58,0.38)');
+    }
+    if (o.hit > 0) tint(g, x - o.r, y - o.r * 1.3, o.r * 2, o.r * 2, Math.min(1, o.hit) * 0.4);
+
+    var bw = o.r * 1.9;
+    rect(g, x - bw / 2, y - o.r - 26, bw, 4, 'rgba(58,38,32,0.5)');
+    rect(g, x - bw / 2, y - o.r - 26, bw * frac, 4, frac > 0.35 ? P.gold : P.blood);
+  }
+
+  function drawPlaces() {
+    var g = ctx;
+    W.places.forEach(function (pl) {
+      var fade = Math.min(1, pl.life / 2);
+      if (pl.type === 'ward') {
+        g.fillStyle = 'rgba(242,181,68,' + (0.10 * fade) + ')';
+        g.beginPath(); g.arc(pl.x, pl.y, pl.r, 0, 6.2832); g.fill();
+        g.strokeStyle = 'rgba(246,230,210,' + (0.6 * fade) + ')';
+        g.lineWidth = 2; g.setLineDash([6, 5]);
+        g.beginPath(); g.arc(pl.x, pl.y, pl.r, 0, 6.2832); g.stroke();
+        g.setLineDash([]);
+      } else if (pl.type === 'altar') {
+        g.fillStyle = 'rgba(123,74,134,' + (0.20 * fade) + ')';
+        g.beginPath(); g.arc(pl.x, pl.y, pl.r, 0, 6.2832); g.fill();
+        g.strokeStyle = 'rgba(155,96,168,' + (0.75 * fade) + ')';
+        g.lineWidth = 2; g.setLineDash([3, 6]);
+        g.beginPath(); g.arc(pl.x, pl.y, pl.r, 0, 6.2832); g.stroke();
+        g.setLineDash([]);
+        g.strokeStyle = P.demonHot; g.lineWidth = 2.4;
+        g.beginPath();
+        g.arc(pl.x, pl.y, pl.r - 4, -Math.PI / 2, -Math.PI / 2 + 6.2832 * (pl.life / pl.maxLife));
+        g.stroke();
+        rect(g, pl.x - 2, pl.y - 14, 4, 22, P.demonDark);
+        rect(g, pl.x - 8, pl.y - 5, 16, 4, P.demonDark);
+        rect(g, pl.x - 5, pl.y - 18, 10, 5, P.demonHot);
+      }
+    });
+  }
+
+  function drawProjectiles() {
+    var g = ctx;
+    for (var i = 0; i < W.projs.length; i++) {
+      var p = W.projs[i];
+      if (!p.active) continue;
+      g.save();
+      g.translate(p.x, p.y);
+      g.rotate(p.spin);
+      if (p.kind === 'arrow') {
+        rect(g, -5, -0.9, 10, 1.8, '#e8dcc8');
+        rect(g, 4, -1.6, 3, 3.2, P.steel);
+      } else {
+        rect(g, -4, -2, 8, 4, P.demonHot);
+        rect(g, -2, -3.4, 4, 6.8, 'rgba(255,122,92,0.45)');
+      }
+      g.restore();
+    }
+  }
+
+  function drawParticles() {
+    var g = ctx;
+    var cols = [P.demonHot, P.gold, P.blood, P.demonHot, P.bone];
+    for (var i = 0; i < W.parts.length; i++) {
+      var q = W.parts[i];
+      if (q.life <= 0) continue;
+      var a = q.life / q.max;
+      g.globalAlpha = a;
+      rect(g, q.x - q.size / 2, q.y - q.size / 2, q.size, q.size, cols[q.tint] || P.bone);
+    }
+    g.globalAlpha = 1;
+  }
+
+  function drawCircle() {
+    var g = ctx, p = W.player;
+    var t = performance.now() / 1000;
+    g.fillStyle = 'rgba(58,38,32,0.32)';
+    g.beginPath(); g.arc(p.x, p.y, p.r + 5, 0, 6.2832); g.fill();
+    g.strokeStyle = P.demonHot; g.lineWidth = 2.4;
+    g.beginPath(); g.arc(p.x, p.y, p.r, 0, 6.2832); g.stroke();
+    g.strokeStyle = 'rgba(242,181,68,' + (0.5 + 0.25 * Math.sin(t * 3)) + ')';
+    g.lineWidth = 1.4;
+    g.beginPath();
+    for (var k = 0; k < 6; k++) {
+      var a = (90 + (k % 5) * 144) * Math.PI / 180;
+      var px = p.x + Math.cos(a) * (p.r - 6), py = p.y + Math.sin(a) * (p.r - 6);
+      if (k) g.lineTo(px, py); else g.moveTo(px, py);
+    }
+    g.stroke();
+    if (p.hit > 0) {
+      g.strokeStyle = 'rgba(209,69,63,' + Math.min(1, p.hit) + ')';
+      g.lineWidth = 4;
+      g.beginPath(); g.arc(p.x, p.y, p.r + 3, 0, 6.2832); g.stroke();
+    }
+  }
+
+  function drawSigil() {
+    if (!strokes.length) return;
+    var g = ctx;
+    setScreenTransform();
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    for (var s = 0; s < strokes.length; s++) {
+      var st = strokes[s];
+      if (st.length < 2) continue;
+      g.strokeStyle = 'rgba(58,38,32,0.30)'; g.lineWidth = 9;
+      g.beginPath(); g.moveTo(st[0].sx, st[0].sy + 2);
+      for (var i = 1; i < st.length; i++) g.lineTo(st[i].sx, st[i].sy + 2);
+      g.stroke();
+      g.strokeStyle = P.demonHot; g.lineWidth = 6;
+      g.beginPath(); g.moveTo(st[0].sx, st[0].sy);
+      for (var j = 1; j < st.length; j++) g.lineTo(st[j].sx, st[j].sy);
+      g.stroke();
+      g.strokeStyle = 'rgba(255,220,190,0.75)'; g.lineWidth = 2;
+      g.stroke();
+    }
+  }
+
+  function drawFlashes(dt) {
+    var g = ctx;
+    for (var i = flashes.length - 1; i >= 0; i--) {
+      var f = flashes[i];
+      f.life -= dt;
+      if (f.life <= 0) { flashes.splice(i, 1); continue; }
+      var a = f.life / f.max;
+      g.strokeStyle = 'rgba(255,122,92,' + a + ')';
+      g.lineWidth = 3;
+      g.beginPath(); g.arc(f.x, f.y, (1 - a) * 34 + 6, 0, 6.2832); g.stroke();
+    }
+  }
+
+  /* ---------- frame ---------- */
+
+  function draw(dt) {
+    setScreenTransform();
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = P.ink;
+    ctx.fillRect(0, 0, cv.width, cv.height);
+
+    if (!terr) return;
+    setWorldTransform();
+    ctx.drawImage(terr, 0, W.camY * TS, V.w * TS, V.h * TS, 0, W.camY, V.w, V.h);
+
+    drawPlaces();
+
+    var actors = [];
+    for (var i = 0; i < W.objs.length; i++) actors.push(W.objs[i]);
+    for (var j = 0; j < W.units.length; j++) actors.push(W.units[j]);
+    actors.sort(function (a, b) { return a.y - b.y; });
+    for (var k = 0; k < actors.length; k++) {
+      var a = actors[k];
+      if (a.y < W.camY - 60 || a.y > W.camY + V.h + 60) continue;
+      if (a.alive !== undefined) drawObjective(a); else drawUnit(a);
+    }
+
+    drawProjectiles();
+    drawParticles();
+    drawCircle();
+    drawFlashes(dt);
+    drawSigil();
+  }
+
+  /* ---------- input ---------- */
+
+  function localScreen(e) {
+    var r = cv.getBoundingClientRect();
+    return { sx: e.clientX - r.left, sy: e.clientY - r.top };
+  }
+
+  cv.addEventListener('pointerdown', function (e) {
+    if (!running) return;
+    e.preventDefault();
+    clearTimeout(settleTimer);
+    cv.setPointerCapture(e.pointerId);
+    drawing = true;
+    var s = localScreen(e), w = worldPt(e);
+    strokes.push([{ sx: s.sx, sy: s.sy, x: w.x, y: w.y }]);
+  });
+
+  cv.addEventListener('pointermove', function (e) {
+    if (!drawing) return;
+    e.preventDefault();
+    var st = strokes[strokes.length - 1];
+    var s = localScreen(e), w = worldPt(e);
+    var last = st[st.length - 1];
+    if (Math.abs(s.sx - last.sx) + Math.abs(s.sy - last.sy) < 2) return;
+    st.push({ sx: s.sx, sy: s.sy, x: w.x, y: w.y });
+  });
+
+  function lift() {
+    if (!drawing) return;
+    drawing = false;
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(judge, SETTLE);
+  }
+  cv.addEventListener('pointerup', lift);
+  cv.addEventListener('pointercancel', lift);
+
+  function judge() {
+    var raw = [], n = 0;
+    strokes.forEach(function (st, i) {
+      st.forEach(function (p) { raw.push({ x: p.sx, y: p.sy, id: i }); n++; });
+    });
+    var cx = 0, cy = 0, m = 0;
+    strokes.forEach(function (st) { st.forEach(function (p) { cx += p.x; cy += p.y; m++; }); });
+    strokes = [];
+    if (n < 4) return;
+    cx /= m; cy /= m;
+
+    var r = window.PDollar.rank(raw, BANK);
+    var top = r[0];
+    if (top.dist > CORRUPT_D) { toast('Nothing took', 'bad'); return; }
+    var corrupt = top.dist > MAX_D || top.edge < MIN_EDGE;
+    var res = WD.cast(top.id, cx, cy, corrupt);
+    if (!res.ok) {
+      var msg = res.reason === 'blood' ? 'Not enough blood for ' + res.name
+        : res.reason === 'cap' ? 'Only ' + res.cap + ' ' + res.name.toLowerCase() + 's at once'
+        : 'Nothing took';
+      toast(msg, 'bad');
+      return;                                  // refused before any blood is spent
+    }
+    flashes.push({ x: res.x, y: res.y, life: 0.45, max: 0.45 });
+    toast((corrupt ? 'Corrupted ' : '') + res.name, corrupt ? 'warn' : 'good');
+  }
+
+  function toast(text, tone) {
+    toasts.push({ text: text, tone: tone, life: 1.5 });
+    if (toasts.length > 3) toasts.shift();
+  }
+
+  /* ---------- HUD ---------- */
+
+  function buildStrip() {
+    var el = $('strip');
+    el.innerHTML = '';
+    window.GLYPHS.forEach(function (g) {
+      var s = K.SUMMONS[g.id];
+      var d = document.createElement('div');
+      d.className = 'sig';
+      d.innerHTML = '<canvas width="60" height="60"></canvas><b>' + s.name + '</b><i>' + s.cost + '</i>' +
+        (s.place && s.place.cap ? '<u id="cap-' + g.id + '"></u>' : '');
+      el.appendChild(d);
+      var c = d.querySelector('canvas'), x = c.getContext('2d');
+      x.strokeStyle = P.bone; x.lineWidth = 5; x.lineCap = 'round'; x.lineJoin = 'round';
+      g.strokes.forEach(function (st) {
+        x.beginPath();
+        st.forEach(function (p, i) {
+          var px = 7 + (p[0] / 100) * 46, py = 7 + (p[1] / 100) * 46;
+          if (i) x.lineTo(px, py); else x.moveTo(px, py);
+        });
+        x.stroke();
+      });
+    });
+  }
+
+  function renderHUD() {
+    var st = W.stages[W.stage];
+    $('stageName').textContent = st ? st.name : '';
+    $('stageNum').textContent = 'front ' + (W.stage + 1) + '/4';
+    var bp = (W.blood / W.cfg.blood.max) * 100;
+    $('bloodFill').style.width = bp.toFixed(1) + '%';
+    $('bloodNum').textContent = Math.floor(W.blood);
+    var hp = (W.player.hp / W.player.maxHp) * 100;
+    $('circleFill').style.width = Math.max(0, hp).toFixed(1) + '%';
+
+    var capEl = $('cap-cross');
+    if (capEl) {
+      var n = 0;
+      for (var q = 0; q < W.places.length; q++) if (W.places[q].type === 'altar') n++;
+      capEl.textContent = n ? n + '/' + K.SUMMONS.cross.place.cap : '';
+      capEl.className = n >= K.SUMMONS.cross.place.cap ? 'full' : '';
+    }
+
+    var el = $('toasts');
+    el.innerHTML = toasts.map(function (t) {
+      return '<span class="t ' + t.tone + '" style="opacity:' + Math.min(1, t.life * 1.6) + '">' + t.text + '</span>';
+    }).join('');
+
+    var b = $('banner');
+    if (W.banner) {
+      b.textContent = W.banner.text;
+      b.style.opacity = Math.min(1, W.banner.life / 0.6);
+      b.classList.remove('hidden');
+    } else b.classList.add('hidden');
+  }
+
+  /* ---------- loop ---------- */
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    var dt = Math.min(0.05, (now - lastNow) / 1000 || 0);
+    lastNow = now;
+    if (running) {
+      acc += dt;
+      var guard = 0;
+      while (acc >= 1 / 60 && guard++ < 5) { WD.step(1 / 60); acc -= 1 / 60; }
+      for (var i = toasts.length - 1; i >= 0; i--) { toasts[i].life -= dt; if (toasts[i].life <= 0) toasts.splice(i, 1); }
+      if (W.over) finish(W.over);
+    }
+    draw(dt);
+    renderHUD();
+  }
+
+  /* ---------- shell ---------- */
+
+  function finish(how) {
+    running = false;
+    var o = $('over');
+    $('overTitle').textContent = how === 'won' ? 'The keep is broken' : 'The circle is broken';
+    $('overBody').textContent = how === 'won'
+      ? 'Four fronts in ' + Math.round(W.t) + 's. ' + W.kills + ' defenders killed, ' + W.losses + ' of yours lost.'
+      : 'They reached the circle at ' + Math.round(W.t) + 's, with ' + W.cleared + ' of 4 fronts taken.';
+    o.classList.remove('hidden');
+  }
+
+  function begin() {
+    WD.reset();          // layout is identical between runs, so the baked strip stays valid
+    toasts = []; flashes = []; strokes = [];
+    $('over').classList.add('hidden');
+    $('intro').classList.add('hidden');
+    acc = 0;
+    lastNow = performance.now();
+    running = true;
+  }
+
+  $('startBtn').addEventListener('click', begin);
+  $('againBtn').addEventListener('click', begin);
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', function () { setTimeout(resize, 250); });
+
+  WD.reset();
+  bakeTerrain();
+  buildStrip();
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

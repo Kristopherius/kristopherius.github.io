@@ -89,6 +89,21 @@ back.
 To refresh: copy `build/index.html` over
 `public/games/stress-experiment/index.html` and delete the Poki script tag again.
 
+### Digi-Dash, Spherical! and Horns
+
+Single-file builds, added from uploaded HTML. Three.js is inlined in Digi-Dash
+and Spherical!, so none of the three fetch anything from a CDN.
+
+- **Digi-Dash** and **Spherical!** had their Poki `<script>` tag removed, for the
+  same reasons as Stress Experiment. Every call in both is guarded on
+  `window.PokiSDK`, so it all no-ops without it. **Horns** never had one.
+- **Digi-Dash expects 12 audio files** under `assets/audio/` (`jump.ogg`,
+  `coin.ogg`, … and `music.mp3`) that are not inside the HTML. Each load is
+  wrapped in try/catch and `playSfx()` no-ops on a missing buffer, so the game
+  plays normally — silently. Drop the folder in at
+  `public/games/digidash/assets/audio/` to restore sound; nothing else needs
+  changing.
+
 ### Perihelion
 
 - **Source:** the published Claude artifact (`Perihelion`), a single-file

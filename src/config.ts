@@ -142,6 +142,42 @@ export const siteConfig = {
       link: "",
     },
     {
+      name: "Digi-Dash",
+      description:
+        "A cyberpunk endless runner. Switch lanes, jump the barriers and duck the low beams, while gates ahead of you multiply your score or gut it \u2014 and the coins you bring back buy characters, tracks and upgrades.",
+      embedPath: "/games/digidash/index.html",
+      thumbnail: "/images/Games/digidash.jpg",
+      aspectRatio: "16 / 9",
+      controls: "Arrow keys or WASD \u2014 up to jump, down to duck. Swipe on touch",
+      skills: ["Three.js", "WebGL", "JavaScript", "Endless Runner"],
+      dateRange: "2026",
+      link: "",
+    },
+    {
+      name: "Spherical!",
+      description:
+        "A whole planet, and it is yours to fill. Drag to walk, step onto a marker to build it \u2014 plant the land, raise a home and claim the cells around you. Build four fifths of a world and the next one opens.",
+      embedPath: "/games/spherical/index.html",
+      thumbnail: "/images/Games/spherical.jpg",
+      aspectRatio: "16 / 9",
+      controls: "WASD or the arrow keys to walk, or drag with the mouse \u2014 walk onto a marker to build it",
+      skills: ["Three.js", "WebGL", "JavaScript", "Procedural Worlds"],
+      dateRange: "2026",
+      link: "",
+    },
+    {
+      name: "Horns",
+      description:
+        "A siege held off by drawing. Sketch a sigil anywhere on the field to summon \u2014 nothing pauses while you draw, and a sloppy sigil still summons, just corrupted and weaker. Blood regrows on its own and pours in from kills, while the host works through four fronts: outskirts, village, palisade, keep.",
+      embedPath: "/games/horns/index.html",
+      thumbnail: "/images/Games/horns.jpg",
+      aspectRatio: "16 / 9",
+      controls: "Draw with the mouse or your finger",
+      skills: ["HTML5 Canvas", "JavaScript", "Prototype"],
+      dateRange: "2026 - Prototype",
+      link: "",
+    },
+    {
       name: "Perihelion",
       description:
         "A survivors-like set on a tiny procedural planet. You are a ball rolling across its surface, holding off a swarm that has found what is left of the world \u2014 level up, pick your upgrades, and bring down the guardians.",
