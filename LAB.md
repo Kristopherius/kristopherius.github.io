@@ -13,7 +13,7 @@ anyone to delete.
 
 So the apps are **encrypted instead**. What lives in this repository is
 ciphertext; the browser derives a key from your passphrase and decrypts in
-memory. A decrypted app is handed to its iframe as a blob, so the plaintext
+memory. A decrypted app is handed to its iframe as `srcdoc`, so the plaintext
 never exists at a URL anyone else could request.
 
 - **AES-256-GCM**, with the key from **PBKDF2-SHA256 at 310,000 iterations**.

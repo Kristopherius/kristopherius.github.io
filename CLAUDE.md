@@ -95,5 +95,5 @@ Nothing links to it and it carries `noindex`. The apps behind it are stored
 **encrypted** (`public/lab/*.enc`), because a static host serves every file
 to anyone who asks and a password that merely checks-then-reveals would
 protect nothing. `tools/pack-lab.mjs` seals them; the browser derives the key
-with PBKDF2 and decrypts in memory, handing each app to its iframe as a blob.
+with PBKDF2 and decrypts in memory, handing each app to its iframe as `srcdoc` (not a blob: URL, which would send no Referer and get map tiles refused).
 Plaintext app sources must never be committed. See `LAB.md`.

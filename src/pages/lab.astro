@@ -101,7 +101,6 @@ const accent = siteConfig.accentColor;
       const un64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
       let key: CryptoKey | null = null;
-      let blobUrl: string | null = null;
 
       /* The salt and iteration count are public by necessity — the browser
          cannot derive the key without them. Everything else on the wire is
@@ -191,16 +190,18 @@ const accent = siteConfig.accentColor;
         return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
       }
 
-      /* The decrypted app is handed to an iframe as a blob, so the plaintext
+      /* The decrypted app is handed to its iframe as srcdoc, so the plaintext
          only ever exists in this tab's memory — it is never written to a URL
-         anyone else could request. */
+         anyone else could request. Not a blob: URL, because a blob document
+         sends no Referer at all, and map tile servers (OpenStreetMap's among
+         them) refuse requests without one. A srcdoc document sends this
+         page's origin instead. */
       async function launch(slug: string, name: string, note: string) {
         if (!key) return;
         const html = await open(key, `/lab/${slug}.enc`);
         close();
-        blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
         const frame = document.createElement("iframe");
-        frame.src = blobUrl;
+        frame.srcdoc = html;
         frame.title = name;
         frame.className = "w-full h-full border-0";
         frame.setAttribute("allow", "autoplay; fullscreen");
@@ -213,8 +214,6 @@ const accent = siteConfig.accentColor;
 
       function close() {
         el("player-frame").replaceChildren();
-        if (blobUrl) URL.revokeObjectURL(blobUrl);
-        blobUrl = null;
       }
 
       el("player-close").addEventListener("click", () => {
