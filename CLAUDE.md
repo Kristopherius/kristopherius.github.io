@@ -87,3 +87,13 @@ arrow keys are deliberately *not* bound for games, since Perihelion uses them
 to move.
 See `GAMES.md` for how to add a build, including the Unity WebGL compression
 caveat on GitHub Pages.
+
+## The private lab at `/lab`
+
+`src/pages/lab.astro` is an unlisted page holding work that is not public.
+Nothing links to it and it carries `noindex`. The apps behind it are stored
+**encrypted** (`public/lab/*.enc`), because a static host serves every file
+to anyone who asks and a password that merely checks-then-reveals would
+protect nothing. `tools/pack-lab.mjs` seals them; the browser derives the key
+with PBKDF2 and decrypts in memory, handing each app to its iframe as a blob.
+Plaintext app sources must never be committed. See `LAB.md`.

@@ -1,0 +1,229 @@
+---
+import { siteConfig } from "../config";
+import "../styles/global.css";
+
+const accent = siteConfig.accentColor;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    {/* Unlisted: nothing links here, and it asks not to be indexed. The real
+        protection is that the apps are encrypted — this only keeps the page
+        out of search results. It is deliberately absent from robots.txt,
+        since a Disallow line would advertise the path to anyone reading it. */}
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Lab</title>
+  </head>
+  <body class="bg-gray-50" data-accent={accent}>
+    <!-- ---------- locked ---------- -->
+    <section id="gate" class="min-h-screen flex items-center justify-center p-6">
+      <form id="gate-form" class="w-full max-w-sm">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Lab</h1>
+        <div class="w-[60px] h-[4px] mt-2 rounded-full" style={`background-color: ${accent}`}></div>
+        <p class="mt-5 text-sm text-gray-600 leading-relaxed">
+          Work in progress, kept private. Enter the passphrase to decrypt it.
+        </p>
+
+        <label class="block mt-6">
+          <span class="text-xs font-semibold text-gray-700">Passphrase</span>
+          <input
+            id="pw"
+            type="password"
+            autocomplete="current-password"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            class="mt-1.5 w-full px-3 py-2.5 bg-white border border-gray-300 rounded-lg text-base text-gray-900 focus:outline-none focus:border-gray-900"
+          />
+        </label>
+
+        <button
+          id="unlock"
+          type="submit"
+          class="mt-4 w-full px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-opacity disabled:opacity-60"
+          style={`background-color: ${accent}`}
+        >
+          Unlock
+        </button>
+
+        <p id="gate-msg" class="mt-3 text-sm min-h-[1.25rem]" role="status" aria-live="polite"></p>
+
+        <a href="/" class="inline-block mt-6 text-xs text-gray-500 hover:text-gray-900 underline">
+          Back to the portfolio
+        </a>
+      </form>
+    </section>
+
+    <!-- ---------- unlocked ---------- -->
+    <section id="shelf" class="hidden min-h-screen p-6 sm:p-10">
+      <div class="max-w-3xl mx-auto">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Lab</h1>
+            <div class="w-[60px] h-[4px] mt-2 rounded-full" style={`background-color: ${accent}`}></div>
+          </div>
+          <button id="relock" class="shrink-0 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors">
+            Lock
+          </button>
+        </div>
+        <p class="mt-4 text-sm text-gray-600">Decrypted in this tab only. Reloading locks it again.</p>
+        <div id="list" class="mt-8 space-y-4"></div>
+      </div>
+    </section>
+
+    <!-- ---------- player ---------- -->
+    <section id="player" class="hidden fixed inset-0 z-50 bg-white flex flex-col">
+      <header class="flex items-center justify-between gap-4 px-4 py-2.5 border-b border-gray-200 shrink-0">
+        <div class="min-w-0">
+          <h2 id="player-name" class="text-sm font-bold text-gray-900 truncate"></h2>
+          <p id="player-note" class="text-[11px] text-gray-500 truncate"></p>
+        </div>
+        <button id="player-close" class="shrink-0 px-3 py-1.5 border border-gray-300 text-gray-700 rounded-md text-xs font-medium hover:bg-gray-100 transition-colors">
+          Close
+        </button>
+      </header>
+      <div id="player-frame" class="flex-1 min-h-0 bg-white"></div>
+    </section>
+
+    <script>
+      const enc = new TextEncoder();
+      const dec = new TextDecoder();
+      const el = (id: string) => document.getElementById(id)!;
+      const un64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+      let key: CryptoKey | null = null;
+      let blobUrl: string | null = null;
+
+      /* The salt and iteration count are public by necessity — the browser
+         cannot derive the key without them. Everything else on the wire is
+         ciphertext. */
+      const getKey = async (password: string) => {
+        const response = await fetch("/lab/index.json");
+        /* Distinguish "nothing has been sealed here" from "wrong passphrase".
+           Reporting a bad passphrase when the vault is simply empty sends you
+           hunting for the wrong problem. */
+        if (!response.ok) throw new Error("empty-vault");
+        const meta = await response.json();
+        const material = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+        return crypto.subtle.deriveKey(
+          { name: "PBKDF2", salt: un64(meta.salt), iterations: meta.iter, hash: "SHA-256" },
+          material,
+          { name: "AES-GCM", length: 256 },
+          false,
+          ["decrypt"],
+        );
+      };
+
+      /* AES-GCM is authenticated, so a wrong key does not yield junk — it
+         throws. That is what makes the password check trustworthy rather
+         than a comparison someone can edit out of the page. */
+      const open = async (k: CryptoKey, path: string) => {
+        const { iv, data } = await fetch(path).then((r) => r.json());
+        const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: un64(iv) }, k, un64(data));
+        return dec.decode(plain);
+      };
+
+      const say = (text: string, bad = false) => {
+        const msg = el("gate-msg");
+        msg.textContent = text;
+        msg.className = `mt-3 text-sm min-h-[1.25rem] ${bad ? "text-red-600" : "text-gray-500"}`;
+      };
+
+      el("gate-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const password = (el("pw") as HTMLInputElement).value;
+        if (!password) return;
+        const button = el("unlock") as HTMLButtonElement;
+        button.disabled = true;
+        /* Deriving deliberately takes a moment — that cost is the brute-force
+           defence, so the wait is the feature, not a stall. */
+        say("Deriving key…");
+        try {
+          const k = await getKey(password);
+          const apps = JSON.parse(await open(k, "/lab/manifest.enc"));
+          key = k;
+          (el("pw") as HTMLInputElement).value = "";
+          render(apps);
+          el("gate").classList.add("hidden");
+          el("shelf").classList.remove("hidden");
+        } catch (error) {
+          say(
+            (error as Error)?.message === "empty-vault"
+              ? "Nothing is sealed here yet."
+              : "That passphrase does not open it.",
+            true,
+          );
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      function render(apps: any[]) {
+        const accent = document.body.dataset.accent || "#111827";
+        el("list").innerHTML = apps
+          .map(
+            (app) => `
+          <div class="p-5 bg-white rounded-xl border border-gray-200">
+            <h2 class="text-lg font-bold text-gray-900">${escape(app.name)}</h2>
+            <p class="mt-1.5 text-sm text-gray-600 leading-relaxed">${escape(app.blurb)}</p>
+            ${app.note ? `<p class="mt-2 text-xs text-gray-500">${escape(app.note)}</p>` : ""}
+            <button data-slug="${escape(app.slug)}" data-name="${escape(app.name)}" data-note="${escape(app.note || "")}"
+              class="launch mt-4 px-4 py-2 rounded-lg text-sm font-medium text-white"
+              style="background-color: ${accent}">Open</button>
+          </div>`,
+          )
+          .join("");
+        el("list").querySelectorAll<HTMLElement>(".launch").forEach((button) => {
+          button.addEventListener("click", () => launch(button.dataset.slug!, button.dataset.name!, button.dataset.note!));
+        });
+      }
+
+      function escape(s: string) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+      }
+
+      /* The decrypted app is handed to an iframe as a blob, so the plaintext
+         only ever exists in this tab's memory — it is never written to a URL
+         anyone else could request. */
+      async function launch(slug: string, name: string, note: string) {
+        if (!key) return;
+        const html = await open(key, `/lab/${slug}.enc`);
+        close();
+        blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+        const frame = document.createElement("iframe");
+        frame.src = blobUrl;
+        frame.title = name;
+        frame.className = "w-full h-full border-0";
+        frame.setAttribute("allow", "autoplay; fullscreen");
+        el("player-frame").appendChild(frame);
+        el("player-name").textContent = name;
+        el("player-note").textContent = note;
+        el("player").classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+
+      function close() {
+        el("player-frame").replaceChildren();
+        if (blobUrl) URL.revokeObjectURL(blobUrl);
+        blobUrl = null;
+      }
+
+      el("player-close").addEventListener("click", () => {
+        close();
+        el("player").classList.add("hidden");
+        document.body.style.overflow = "";
+      });
+
+      el("relock").addEventListener("click", () => location.reload());
+    </script>
+  </body>
+</html>
